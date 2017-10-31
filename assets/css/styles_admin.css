@@ -1,0 +1,84 @@
+.navbar-inverse, .side-nav{
+    background-color:#2C3E50 !important;
+    color: white !important;
+    border-color: #202d3a !important;
+}
+
+.navbar-inverse .navbar-nav>li>a, .side-nav>li>ul>li>a{
+    color: white !important;
+}
+
+.navbar-inverse .navbar-nav>li>a:hover, .side-nav>li>ul>li>a:hover{
+    background-color: #202d3a !important;
+}
+
+.navbar-inverse .navbar-nav>.active>a{
+    background-color: #202d3a !important;
+}
+
+.navbar-inverse .navbar-brand{
+    color: white !important;
+}
+
+.top-nav>li>a{
+    color: white !important;
+}
+
+.top-nav>li>a:hover{
+    background-color: #202d3a !important;
+}
+
+.wickedpicker{
+    z-index: 9000 !important;
+}
+
+.text-center>thead>tr>th{
+    text-align: center;
+}
+
+.nopadding {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.true_answer{
+    background-color: #bcff89 !important;
+}
+
+.false_answer{
+    background-color: #fc6f64 !important;
+}
+
+.tf_answer:hover{
+    cursor: pointer;
+}
+
+.mc_no{
+    background-color: white !important;
+}
+
+.mc_yes{
+    background-color: #bcff89 !important;
+}
+
+
+.mc_answer:hover{
+    cursor: pointer;
+}
+
+.questions_row{
+    overflow: scroll;
+    max-height: 100px;
+    max-width: 280px;
+}
+
+
+.deleteQuestionBtn{
+    float: right !important;
+    margin-right: 15px;
+    margin-top: 20px !important;
+}
+
+.create_row{
+    margin-bottom: 20px !important;
+}

@@ -1,0 +1,85 @@
+.button-right{
+    float: right;
+    padding-bottom: 5px;
+}
+
+body{
+    background:#18BC9C !important;
+}
+
+.footer{
+    background-color:#2C3E50 !important;
+    font-family:Montserrat,"Helvetica Neue",Helvetica,Arial;
+}
+
+label.error{
+    color:#FF0000;
+}
+select.error, textarea.error, input.error{
+    border-color:#FF0000 !important;
+}
+
+.sidebar_active{
+    background-color: #eeeeee;
+}
+
+.login-form{
+    width: 50%;
+    margin-top: 5%;
+}
+
+.login-input{
+    text-align: center;
+}
+
+.dropzone {
+    border: 2px dashed #0087F7 !important;
+    border-radius: 5px !important;
+}
+
+.register-form{
+    width: 50%;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 60px;
+    background-color: #f5f5f5;
+}
+.container-fluid .text-muted {
+    margin: 20px 0;
+}
+
+.footer > .container-fluid {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.navbar-primary{
+    border-bottom: solid #337ab7;;
+}
+
+code {
+    font-size: 80%;
+}
+
+.col-sm-6{
+    padding: 0 !important;
+}
+
+.navbar-brand{
+    text-transform: none !important;
+}
+
+.grettings_message{
+    text-transform: none !important;
+}
+
+p {
+    padding-top: 10px !important;
+    margin: 0 !important;
+    font-size: 16px !important;
+}
