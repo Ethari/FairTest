@@ -2,6 +2,17 @@
     <button id = "new_test" class="pull-right btn btn-primary button-right" style = "margin: 20px;">New test</button>
 </div>
 
+<div class = "row">
+    <?php
+    if($this->session->flashdata('test_scheduled') != null){
+        echo  '<div class = "col-lg-12"><div class="alert alert-success alert-dismissable">
+              <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+              <strong>Success!</strong> Test scheduled.
+            </div></div>';
+    }
+    ?>
+</div>
+
 <div class="row">
     <div class="col-lg-12">
         <div class="panel panel-default">

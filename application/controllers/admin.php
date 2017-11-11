@@ -7,12 +7,16 @@ class Admin extends CI_Controller {
         parent::__construct();
         $this->load->model('loader');
         $this->load->model('Courses_Model');
+        $this->load->model('Tests_Model');
+
     }
 
     public function index()
     {
         $page = 'home';
-        $this->loader->generateAdminPage($page);
+        $scheduled_tests['tests'] = $this->Tests_Model->getScheduledTests(1);
+        $this->loader->generateAdminPage($page, $scheduled_tests);
+        ChromePhp::log($scheduled_tests);
     }
 
     public function users(){

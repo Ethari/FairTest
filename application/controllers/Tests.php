@@ -58,7 +58,11 @@ class Tests extends CI_Controller {
     }
 
     public function save_schedule_test(){
+        $test_details = $_POST;
         ChromePhp::log($_POST);
+        $this->Tests_Model->scheduleTest($test_details);
+        $this->session->set_flashdata('test_scheduled', $test_details);
+
     }
 
     public function get_test_questions(){

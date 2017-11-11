@@ -1,10 +1,28 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+body {
+    margin: 0 0 100px;
+    /* bottom = footer height */
+    padding: 25px;
+}
+footer {
+    background-color: orange;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 100px;
+    width: 100%;
+    overflow:hidden;
+}
 .button-right{
     float: right;
     padding-bottom: 5px;
 }
 
 body{
-    background:#18BC9C !important;
+    background: whitesmoke !important;
 }
 
 .footer{
@@ -66,9 +84,6 @@ code {
     font-size: 80%;
 }
 
-.col-sm-6{
-    padding: 0 !important;
-}
 
 .navbar-brand{
     text-transform: none !important;
@@ -76,6 +91,7 @@ code {
 
 .grettings_message{
     text-transform: none !important;
+    color: black !important;
 }
 
 p {
@@ -83,3 +99,74 @@ p {
     margin: 0 !important;
     font-size: 16px !important;
 }
+
+.main_page_header{
+    background-color: whitesmoke !important;
+    color: black;
+}
+
+#sidebar-wrapper{
+    background-color: #42586E !important;
+}
+
+.sidebar-nav>.sidebar-brand a, .sidebar-nav li a {
+    color: white !important;
+}
+
+.exam_page{
+    margin-top: 75px;
+}
+
+.question_panel{
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.mc_question_text{
+    padding-left: 20px;
+}
+
+.left{
+    float: left !important;
+}
+
+.right{
+    float: right !important;
+}
+
+.exam_question_description{
+    margin-left: 15px;
+    margin-bottom: 10px;
+}
+
+#pagination-container{
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.your-clock{
+    zoom: 0.55;
+    -moz-transform: scale(0.55)
+}
+
+.flip-clock-label
+{
+    display: none !important;
+}
+
+.flip-clock-wrapper .flip-clock-divider .flip-clock-label {
+    color: #FFF;
+}
+
+.nopadding{
+    padding: 0;
+}
+
+.tf-select{
+    margin-right: 10px;
+}
+
+.mc_question_text{
+    margin-left: 5px;
+}
+

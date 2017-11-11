@@ -25,13 +25,10 @@
                 <?php
                     if($this->session->has_userdata('username')){
                         echo '<li class="">
-                                <a href = "'.base_url().'user" id="exams">Exams</a>
+                                <a href = "'.base_url().'exams" id="exams">EXAMS</a>
                               </li>';
                         echo '<li class="">
-                                <a href = "'.base_url().'user" id="account">Manage profile</a>
-                              </li>';
-                        echo '<li class="">
-                                <a href = "'.base_url().'" id="logout">Logout</a>
+                                <a href = "'.base_url().'" id="logout">LOGOUT</a>
                               </li>';
                     }
                 ?>
@@ -41,3 +38,4 @@
     </div>
     <!-- /.container-fluid -->
 </nav>
+<!-- Sidebar -->

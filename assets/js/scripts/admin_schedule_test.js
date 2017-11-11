@@ -49,8 +49,8 @@ $(function() {
             }
         },
         submitHandler: function() {
-            var form_data = $('#create_exam_form').serialize() + group_table.$('input').serialize();
-
+            var test_id = $(".test_id").attr('id');
+            var form_data = $('#create_exam_form').serialize() + group_table.$('input').serialize() + '&test_id=' + test_id;
 
             var request = $.ajax({
                 method: "POST",
@@ -59,14 +59,14 @@ $(function() {
             });
 
             request.done(function (id, textStatus, jqXHR) {
-
+                window.location.replace(BASE_URL + "tests");
             });
 
             // callback handler that will be called on failure
-            request.fail(function (jqXHR, textStatus, errorThrown) {
-                // log the error to the console
-                alert(
-                    "The following error occured: " + textStatus, errorThrown);
+            request.error(function (jqXHR, textStatus, errorThrown) {
+                console.log(jqXHR);
+
+                console.log(jqXHR.responseText);
             });
         }
     });
@@ -76,9 +76,15 @@ $(function() {
 });
 
 function initWidgets(){
-    $( "#test_date" ).datepicker({ minDate: 0});
-    $( "#result_date" ).datepicker({ minDate: 0});
-    $('#test_start_hour').wickedpicker();
-    $('#test_end_hour').wickedpicker();
-    $('#result_hour').wickedpicker();
+    $( "#test_date" ).datepicker({ minDate: 0, dateFormat: 'dd/mm/yy'});
+    $( "#result_date" ).datepicker({ minDate: 0, dateFormat: 'dd/mm/yy'});
+
+    var wicked_options = {
+        twentyFour: true,
+        timeSeparator: ':'
+    };
+
+    $('#test_start_hour').wickedpicker(wicked_options);
+    $('#test_end_hour').wickedpicker(wicked_options);
+    $('#result_hour').wickedpicker(wicked_options);
 }

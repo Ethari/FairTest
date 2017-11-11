@@ -1,2 +1,4 @@
 /user_guide
 /.idea
+/application/config/database.php
+/application/config/config.php

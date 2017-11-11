@@ -34,6 +34,10 @@ class Loader extends CI_Model {
 
         $this->load->view('header');
         $this->load->view('navbar');
+        ChromePhp::log($page);
+        if($page == 'exams'){
+            $this->load->view('sidebar');
+        }
         $this->load->view($page, $data);
         $this->load->view('footer');
     }

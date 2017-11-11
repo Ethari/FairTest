@@ -1,10 +1,5 @@
 <!-- Header -->
-<?php
-
-print_r($this->session->userdata());
-?>
-?>
-<header>
+<header class = "main_page_header">
     <div class="container" id="maincontent" tabindex="-1">
         <div class="row">
             <div class="col-lg-12">

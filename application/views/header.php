@@ -18,15 +18,19 @@ $this->load->helper('url');
     <!-- Bootstrap Core CSS -->
     <link href="<?php echo base_url("/assets/css/bootstrap.css"); ?>" rel="stylesheet">
     <link href="<?php echo base_url("/assets/css/styles.css"); ?>" rel="stylesheet">
+    <link href="<?php echo base_url("/assets/css/simple-sidebar.css"); ?>" rel="stylesheet">
 
     <!-- Theme CSS -->
     <link href="<?php echo base_url("/assets/css/freelancer.min.css"); ?>" rel="stylesheet">
+    <link href="<?php echo base_url("/assets/css/flipclock.css"); ?>" rel="stylesheet">
     <link href="<?php echo base_url("/assets/css/jquery_validation.css"); ?>" rel="stylesheet">
+    <link href="<?php echo base_url("/assets/css/prism.css"); ?>" rel="stylesheet">
+    <link href="<?php echo base_url("/assets/css/pagination.css"); ?>" rel="stylesheet">
+    <link href="<?php echo base_url("/assets/css/jquery-ui.css"); ?>" rel="stylesheet">
+    <link rel="stylesheet" href="<?php echo base_url("/assets/css/datatables.css"); ?>">
 
     <!-- Custom Fonts -->
     <link href="<?php echo base_url("/assets/font-awesome/css/font-awesome.min.css"); ?>" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css">
 
     <script type = "text/javascript">
         var BASE_URL = "<?php echo base_url();?>";
@@ -35,25 +39,18 @@ $this->load->helper('url');
 </head>
 
 <body id="page-top" class="index">
+<script type="text/javascript" src="<?php echo base_url("/assets/js/jquery.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url("/assets/js/bootstrap.js"); ?>"></script>
 
-<script>
-    window.fbAsyncInit = function() {
-        FB.init({
-            appId      : '1301881909849167',
-            cookie     : true,
-            xfbml      : true,
-            version    : 'v2.8'
-        });
-        FB.AppEvents.logPageView();
-    };
+<!-- Contact Form JavaScript -->
+<script type="text/javascript" src="<?php echo base_url("/assets/js/datatables.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url("/assets/js/pagination.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url("/assets/js/jquery-ui.min.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url("/assets/js/jquery_validation.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url("/assets/js/flipclock.min.js"); ?>"></script>
+<script type="text/javascript" src="<?php echo base_url("/assets/js/scripts/index.js"); ?>"></script>
+<script src="<?php echo base_url("assets/js/tinymce/tinymce.min.js"); ?>"></script>
+<script src="<?php echo base_url("assets/js/prism.js"); ?>"></script>
 
-    (function(d, s, id){
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) {return;}
-        js = d.createElement(s); js.id = id;
-        js.src = "//connect.facebook.net/en_US/sdk.js";
-        fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
-</script>
 
 <div id="skipnav"><a href="#maincontent">Skip to main content</a></div>
