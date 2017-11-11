@@ -181,122 +181,32 @@ function sortQuestions(){
     test_questions = orderedQuestions;
 }
 
-function generateQuestionPage(test_questions, page){
+function generateQuestionPage(test_questions){
 
     var pagination = $('#pagination-container').pagination({
         dataSource: test_questions,
         pageSize: 1,
-        pageNumber: page,
         className: '',
-        afterPreviousOnClick: function(){
-            console.log("Render");
-        },
-        afterPageOnClick: function(data){
-            var pageNumber = data.currentTarget.dataset.num;
-            //console.log(this('go', 2));
-            //getQuestionsForTest(test_id, pageNumber);
-        },
-        afterNextOnClick: function(){
-            console.log("Render");
-        },
-        callback: function(data, pagination) {
-            // template method of yourself
-            console.log("Come on");
-            var html = questionList(data);
-            $('#data-container').html(html);
-            Prism.highlightAll();
+        callback: function(data) {
+            questionList(data, function(html){
+                $('#data-container').html(html);
+                Prism.highlightAll();
+            });
         }
     });
-  /*
-    var pagination = $('#pagination-container').pagination({
-        dataSource: function(done) {
-            $.ajax({
-                method: 'POST',
-                url: BASE_URL + 'exams/getGeneratedTestContent',
-                data: {
-                    id: test_id
-                },
-                success: function(response) {
-                    console.log(response);
-                    done(response);
-                }
-            });
-        },
-        locator: 'test',
-        totalNumber: 10,
-        pageSize: 1,
-        ajax: {
-            beforeSend: function() {
-                $('#data-container').html('Loading data from flickr.com ...');
-            }
-        },
-        callback: function(data, pagination) {
-            // template method of yourself
-            var html = questionList(data);
-            $('#data-container').html(html);
-            Prism.highlightAll();
-        }
-    })*/
 }
 
-function questionList(data) {
+function questionList(data, callback) {
     var html;
     var id = data[0][1];
-    //var test = getSpecificQuestion(id);
-    $.each(data, function(index, item){
-        html += getSpecificQuestion(id);
+    var test = getSpecificQuestion(id, function(test_html) {
+        console.log("HTML?");
+        console.log(test_html);
+        callback(test_html);
     });
-    return html;
 }
 
-function getQuestionsForTest(test_id, page_number){
-    var request = $.ajax({
-        method: "POST",
-        url: BASE_URL + "exams/getGeneratedTestContent",
-        data: {
-            id: test_id
-        }
-    });
-
-    request.done(function (response, textStatus, jqXHR) {
-        console.log(response);
-        if(response === 'exam_error'){
-            window.location.replace(BASE_URL + 'exams');
-        }
-
-        var questions = JSON.parse(response);
-        startClock(questions.time_left);
-        delete(questions.time_left);
-        $.each(questions, function(key, value) {
-            var type = value.type;
-            var id = value.question_id;
-            questions_order.unshift(id);
-
-            console.log(questions);
-
-            if(type === "true_false"){
-                generateTrueFalseQuestion(value);
-            } else if(type === "multiple_choice"){
-                generateMultipleChoiceQuestion(value);
-            } else if(type === "open_question"){
-                generateOpenQuestion(value);
-            }
-        });
-
-        sortQuestions();
-        console.log(test_questions);
-        generateQuestionPage(test_questions, page_number);
-        //startClock(10);
-    });
-
-    // callback handler that will be called on failure
-    request.fail(function (jqXHR, textStatus, errorThrown) {
-        console.log(jqXHR);
-    });
-
-}
-
-function getSpecificQuestion(question_id){
+function getSpecificQuestion(question_id, callback){
     var request = $.ajax({
         method: "POST",
         url: BASE_URL + "exams/getQuestionContent",
@@ -318,15 +228,55 @@ function getSpecificQuestion(question_id){
         } else if(type === "open_question"){
             question_html = generateOpenQuestion(question, 'return');
         }
-        console.log("MAAAAAM");
-        console.log(question_html);
-        return question_html;
+        callback(question_html);
     });
 
     // callback handler that will be called on failure
     request.fail(function (jqXHR, textStatus, errorThrown) {
         console.log(jqXHR);
     });
+}
+
+function getQuestionsForTest(test_id){
+    var request = $.ajax({
+        method: "POST",
+        url: BASE_URL + "exams/getGeneratedTestContent",
+        data: {
+            id: test_id
+        }
+    });
+
+    request.done(function (response, textStatus, jqXHR) {
+        if(response === 'exam_error'){
+            window.location.replace(BASE_URL + 'exams');
+        }
+        var questions = JSON.parse(response);
+        startClock(questions.time_left);
+        delete(questions.time_left);
+        $.each(questions, function(key, value) {
+            var type = value.type;
+            var id = value.question_id;
+            questions_order.unshift(id);
+
+            if(type === "true_false"){
+                generateTrueFalseQuestion(value);
+            } else if(type === "multiple_choice"){
+                generateMultipleChoiceQuestion(value);
+            } else if(type === "open_question"){
+                generateOpenQuestion(value);
+            }
+        });
+
+        sortQuestions();
+        generateQuestionPage(test_questions);
+        //startClock(10);
+    });
+
+    // callback handler that will be called on failure
+    request.fail(function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR);
+    });
+
 }
 
 function generateTrueFalseQuestion(question, action){
