@@ -170,3 +170,17 @@ p {
     margin-left: 5px;
 }
 
+.tf_question_selection {
+    padding-right: 20px;
+}
+
+@media screen and (max-width: 780px) {
+    .true_false_bottom{
+        margin-bottom: 40px;
+    }
+
+    .tf_question_selection {
+        padding: 0;
+    }
+}
+

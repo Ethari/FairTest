@@ -128,6 +128,20 @@ function saveAnswers(test_id){
         saveAnswerAjax(data);
     });
 
+    $(".exam_id").on('focusout', '.open_question_answer', function(){
+        var answer = $(this).val();
+        var question_id = $(this).attr('question_id');
+
+        var data = {
+            answer: answer,
+            question_id: question_id,
+            scheduled_test_id: test_id
+        };
+        console.log("Focused out");
+        console.log(data);
+        saveAnswerAjax(data);
+    });
+
 }
 
 function saveAnswerAjax(answer){
@@ -296,14 +310,14 @@ function generateTrueFalseQuestion(question, action){
         }
 
         question_html +='<div class = "form-group tf_question">'+
-            '<div class = "col-sm-2 text-center nopadding" style = "padding-right: 20px;">'+
+            '<div class = "col-sm-2 text-center nopadding tf_question_selection">'+
             '<select class = "form-control true_false_answer" question_id = "'+question.question_id+'" answer_id = "'+value.id+'">' +
-                '<option value = "unknown"></option>' +
+                '<option value = "unknown">-</option>' +
                 '<option '+true_answer+' value = "true">True</option>' +
                 '<option '+false_answer+' value = "false">False</option>' +
             '</select>'+
             '</div>'+
-            '<div class = "col-sm-10 nopadding">' +
+            '<div class = "col-sm-10 nopadding true_false_bottom">' +
             '<label class = "form-control tf_question_text" name = "0">'+description+'</label>'+
             '</div>'+
             '</div>';
@@ -354,14 +368,15 @@ function generateMultipleChoiceQuestion(question, action){
 
     $.each(question.answers, function(key, value) {
         var description = value.description;
-        if(value.selected_answer != null){
+        console.log(value);
+        if(value.selected_answer == 'true'){
             console.log(value.selected_answer);
             var checked = 'checked';
         } else{
             var checked = '';
         }
         question_html +=
-            '<div class = "mc_question form-group" style = "margin: 0 auto;">'+
+            '<div class = "mc_question form-group">'+
                 '<div class = "form-control">' +
                     '<input '+checked+' class = "mc_checkbox_answer" style = "float: left;" type = "checkbox" question_id = "'+question.question_id+'" answer_id = "'+value.id+'">'+
                     '<label class = "mc_question_text">'+description+'</label>'+
@@ -379,8 +394,14 @@ function generateMultipleChoiceQuestion(question, action){
 }
 
 function generateOpenQuestion(question, action){
+    if(question.selected_answer != null){
+        var answer = question.selected_answer;
+    } else{
+        var answer = "";
+    }
+
     var question_html = generateQuestionHeading(question, 'open');
-    question_html += "<textarea question_id = '"+question.question_id+"'class = 'form-control' rows = '4' placeholder = 'Type your answer here...'></textarea>";
+    question_html += "<textarea question_id = '"+question.question_id+"'class = 'form-control open_question_answer' rows = '4' placeholder = 'Type your answer here...'>"+answer+"</textarea>";
     question_html += questionClose(question);
     //$(".questions_field").append(question_html);
 

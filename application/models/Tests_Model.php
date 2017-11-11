@@ -321,10 +321,22 @@ class Tests_Model extends CI_Model {
                             $new_question['answers'][$key]['selected_answer'] = $answer;
                         }
                     }
+                } else{
+                    $sql = "SELECT tsa.answer
+                        FROM test_student_answers tsa 
+                        WHERE (tsa.scheduled_test_id = ".$test['id']." AND 
+                        tsa.question_id = ".$question['question_id']." AND tsa.student_id = ".$student_id.")";
+                    $query = $this->db->query($sql);
+                    if ($query->num_rows() > 0) {
+                        $answer = $query->result_array()[0]['answer'];
+                        $new_question['selected_answer'] = $answer;
+                    }
                 }
                 break;
             }
         }
+
+        ChromePhp::log($new_question);
         return $new_question;
     }
 
@@ -370,6 +382,16 @@ class Tests_Model extends CI_Model {
                             $content_unserialized[$q_key]['answers'][$a_key]['selected_answer'] = $answer;
                         }
                     }
+                }
+            } else{
+                $sql = "SELECT tsa.answer
+                        FROM test_student_answers tsa 
+                        WHERE (tsa.scheduled_test_id = ".$test['id']." AND 
+                        tsa.question_id = ".$question['question_id']." AND tsa.student_id = ".$student_id.")";
+                $query = $this->db->query($sql);
+                if ($query->num_rows() > 0) {
+                    $answer = $query->result_array()[0]['answer'];
+                    $content_unserialized[$q_key]['selected_answer'] = $answer;
                 }
             }
         }

@@ -42,11 +42,11 @@
                                     $type = 'info';
                                     $locked = '';
                                     $text = 'Start';
-                                } else if($test['exam_started'] && $test['scheduled_id'] && !$test['exam_over']){
+                                } else if($test['exam_started'] && $test['scheduled_id'] && !isset($test['exam_over'])){
                                     $type = 'info';
                                     $locked = '';
                                     $text = 'Continue';
-                                } else if($test['exam_started'] && $test['scheduled_id'] && $test['exam_over']){
+                                } else if($test['exam_started'] && $test['scheduled_id'] && isset($test['exam_over'])){
                                     $type = 'info';
                                     $locked = 'disabled';
                                     $text = 'Ended';

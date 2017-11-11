@@ -67,8 +67,6 @@ class Exams extends CI_Controller {
         $id = $_POST['question_id'];
         $test_id = $_POST['test_id'];
         $content = $this->Tests_Model->getGeneratedQuestionContent($id, $test_id);
-        ChromePhp::log("Mamy ");
-        ChromePhp::log($content);
         echo json_encode($content);
     }
 
