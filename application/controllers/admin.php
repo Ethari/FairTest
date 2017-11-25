@@ -34,4 +34,22 @@ class Admin extends CI_Controller {
             $this->loader->generateAdminPage('groups', $data);
         }
     }
+
+    public function test(){
+        $tests = array(
+            "42",
+            1337,
+            "1e4",
+            "not numeric",
+            9.1
+        );
+
+        foreach ($tests as $element) {
+            if (is_numeric($element)) {
+                echo "'{$element}' is numeric <br>", PHP_EOL;
+            } else {
+                echo "'{$element}' is NOT numeric <br>", PHP_EOL;
+            }
+        }
+    }
 }

@@ -14,7 +14,9 @@ class Exams extends CI_Controller {
         $courses = $this->Courses_Model->getCourses(1);
         $tests = $this->Tests_Model->getStudentsScheduledTests(1);
 
-        ChromePhp::log($tests);
+        if(isset($tests['error'])){
+            header('Location: ' . base_url());
+        }
 
         $data = array(
             'courses' => $courses,
@@ -39,6 +41,12 @@ class Exams extends CI_Controller {
 
         $new_test_id = $this->Tests_Model->constructExam($params);
         echo $new_test_id;
+    }
+
+    public function finishExam(){
+        $test_id = $_POST['test_id'];
+        $this->Tests_Model->finishExam($test_id);
+        $this->Tests_Model->gradeExam($test_id);
     }
 
     public function take_exam($id){

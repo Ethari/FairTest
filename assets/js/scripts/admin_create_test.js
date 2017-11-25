@@ -1,5 +1,7 @@
 var test_questions = [];
 var questions_order = [];
+var test_id;
+
 $(document).ajaxStop(function () {
     sortQuestions();
     generateQuestionPage(test_questions);
@@ -7,8 +9,9 @@ $(document).ajaxStop(function () {
 
 
 $(function() {
-    var test_id = $(".test_id").attr('id');
+    test_id = $(".test_id").attr('id');
     getQuestionsForTest();
+    saveQuestionDetails();
 
     $("#save_test").click(function(){
         var test_name = $("#test_name").val();
@@ -90,6 +93,52 @@ $(function() {
     } );
 });
 
+function saveQuestionAjax(data){
+    var ajax = $.ajax({
+        method: "POST",
+        url: BASE_URL + "tests/update_question_points",
+        data: data
+    });
+
+    ajax.done(function (response, textStatus, jqXHR) {
+        location.reload();
+    });
+
+    // callback handler that will be called on failure
+    ajax.fail(function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR);
+    });
+}
+
+function saveQuestionDetails(){
+    $("#data-container").on('click', '.saveQuestionBtn', function(){
+
+
+        var question_id = $(this).attr('id');
+        var points_correct_answer = $("#data-container .correct_answer").val();
+        var points_incorrect_answer = $("#data-container .incorrect_answer").val();
+        var automatic_eval = $("#data-container .automatic_eval").prop('checked');
+
+        if(automatic_eval == null){
+            automatic_eval = false;
+        }
+
+
+        var data = {
+            type: 'correct_answer_points',
+            correct_answer_points: points_correct_answer,
+            incorrect_answer_points: points_incorrect_answer,
+            automatic_eval: automatic_eval,
+            question_id: question_id,
+            test_id: test_id
+        };
+
+        console.log(data);
+        saveQuestionAjax(data);
+    });
+
+}
+
 function sortQuestions(){
     var orderedQuestions = new Array(test_questions.length);
 
@@ -140,6 +189,7 @@ function getQuestionsForTest(){
 
     request.done(function (response, textStatus, jqXHR) {
         var questions = JSON.parse(response);
+        console.log(questions);
         $.each(questions, function(key, value) {
             var type = value.type;
             var id = value.question_id;
@@ -173,7 +223,8 @@ function generateTrueFalseQuestion(id){
         method: "POST",
         url: BASE_URL + "questions/get_question_details",
         data: {
-            id: id
+            id: id,
+            test_id: test_id
         }
     });
 
@@ -181,7 +232,10 @@ function generateTrueFalseQuestion(id){
         question = JSON.parse(response);
 
         question_html = '<div class="row create_row panel panel-default question_panel">' +
-            '<div class="panel-heading">True False Question</div>'+
+            '<div class="panel-heading clearfix">' +
+            'True False Question' +
+            '<button class = "btn btn-danger deleteQuestionBtn right" id = "'+question.id+'">Delete</button>' +
+            '</div>'+
             '<div class="panel-body">' + question.description;
 
 
@@ -216,18 +270,20 @@ function generateMultipleChoiceQuestion(id){
         method: "POST",
         url: BASE_URL + "questions/get_question_details",
         data: {
-            id: id
+            id: id,
+            test_id: test_id
         }
     });
 
-    request.done(function (response, textStatus, jqXHR) {
+    request.done(function (response) {
         question = JSON.parse(response);
 
         var question_html = '<div class="row create_row panel panel-default question_panel">' +
-            '<div class="panel-heading">Multiple Choice Question</div>'+
+            '<div class="panel-heading clearfix">' +
+            'Multiple Choice Question' +
+            '<button class = "btn btn-danger deleteQuestionBtn right" id = "'+question.id+'">Delete</button>' +
+            '</div>'+
             '<div class="panel-body">'+  question.description;
-
-
 
         $.each(question.questions, function(key, value) {
             var answer;
@@ -266,7 +322,8 @@ function generateOpenQuestion(id){
         method: "POST",
         url: BASE_URL + "questions/get_question_details",
         data: {
-            id: id
+            id: id,
+            test_id: test_id
         }
     });
 
@@ -274,7 +331,10 @@ function generateOpenQuestion(id){
         question = JSON.parse(response);
 
         var question_html = '<div class="row create_row panel panel-default question_panel">' +
-            '<div class="panel-heading">Open Question</div>'+
+            '<div class="panel-heading clearfix">' +
+            'Open Question' +
+            '<button class = "btn btn-danger deleteQuestionBtn right" id = "'+question.id+'">Delete</button>' +
+            '</div>'+
             '<div class="panel-body">'+ question.description;
 
         question_html += questionClose(question);
@@ -291,20 +351,26 @@ function generateOpenQuestion(id){
 }
 
 function questionClose(question){
+    console.log(question);
     if(question.type != 3){
         var html =
-            '<div class = "col-sm-4 nopadding" style = "margin-top: 20px !important;"><label>Points for correct answer</label>' +
-            '<input class = "questionPoints form-control" style = "width: 150px;" id = "'+question.id+'" value = "1"></div>' +
-            '<div class = "col-sm-4 nopadding" style = "margin-top: 20px !important;"><label>Points for incorrect answer</label>' +
-            '<input class = "questionPoints form-control" style = "width: 150px;" id = "'+question.id+'" value = "0"></div>' +
-            '<div class = "col-sm-4 nopadding" style = "margin-top: 20px !important;"><label>Automatic evaluation</label><br>' +
-            '<input type = "checkbox" id = "'+question.id+'"></div>' +
-            '<button class = "btn btn-danger deleteQuestionBtn" id = "'+question.id+'">Delete</button>' +
+            '<div class = "col-sm-3 nopadding" style = "margin-top: 20px !important;"><label>Points for correct answer</label>' +
+            '<input class = "questionPoints correct_answer form-control" style = "width: 150px;" id = "'+question.id+'" value = "'+question.correct_answer_points+'"></div>' +
+            '<div class = "col-sm-3 nopadding" style = "margin-top: 20px !important;"><label>Points for incorrect answer</label>' +
+            '<input class = "questionPoints incorrect_answer form-control" style = "width: 150px;" id = "'+question.id+'" value = "'+question.incorrect_answer_points+'"></div>' +
+            '<div class = "col-sm-3 nopadding" style = "margin-top: 20px !important;"><label>Automatic evaluation</label><br>' +
+            '<input '+(question.automatic_eval == true ? "checked" : "")+' class = "automatic_eval" type = "checkbox" id = "'+question.id+'"></div>' +
+            '<div class = "col-sm-3 nopadding text-center"><button class = "btn btn-info saveQuestionBtn" id = "'+question.id+'">Save</button></div>' +
             '</div>'+
             '</div>';
     } else{
         var html =
-            '<button class = "btn btn-danger deleteQuestionBtn" id = "'+question.id+'">Delete</button>' +
+            '<div class = "col-sm-4 nopadding" style = "margin-top: 20px !important;"><label>Points for correct answer</label>' +
+            '<input class = "questionPoints correct_answer form-control" style = "width: 150px;" id = "'+question.id+'" value = "'+question.correct_answer_points+'"></div>' +
+            '<div class = "col-sm-4 nopadding" style = "margin-top: 20px !important;"><label>Points for incorrect answer</label>' +
+            '<input class = "questionPoints incorrect_answer form-control" style = "width: 150px;" id = "'+question.id+'" value = "'+question.incorrect_answer_points+'"></div>' +
+            '<div class = "col-sm-4 nopadding text-center">' +
+            '<button class = "btn btn-info saveQuestionBtn" id = "'+question.id+'">Save</button></div>' +
             '</div>'+
             '</div>';
     }

@@ -115,4 +115,10 @@ class Tests extends CI_Controller {
         $this->Tests_Model->updateTestParams($test_id, $params);
     }
 
+    public function update_question_points(){
+        $params = $_POST;
+
+        $this->Tests_Model->updateQuestionPoints($params);
+    }
+
 }

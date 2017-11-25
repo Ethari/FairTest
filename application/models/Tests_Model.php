@@ -55,7 +55,7 @@ class Tests_Model extends CI_Model {
     }
 
     public function getTestQuestions($id){
-        $sql = "SELECT tq.question_id, q.type FROM tests_questions tq JOIN question q ON q.id = tq.question_id WHERE tq.test_id = " . $id;
+        $sql = "SELECT tq.*, q.type FROM tests_questions tq JOIN question q ON q.id = tq.question_id WHERE tq.test_id = " . $id;
         $query = $this->db->query($sql);
         return $query->result_array();
 
@@ -151,7 +151,8 @@ class Tests_Model extends CI_Model {
 
     public function getStudentsScheduledTests(){
         $student_id = $this->session->userdata('id');
-        $sql = "SELECT ts.*, t.topic, gt.id AS 'scheduled_id', gt.time_started
+        if($student_id != null){
+            $sql = "SELECT ts.*, t.topic, gt.id AS 'scheduled_id', gt.time_started, gt.ended
                 FROM test_schedule ts
                 JOIN test_schedule_group tsg ON tsg.scheduled_test_id  = ts.id 
                 JOIN groups_students  gs ON gs.group_id = tsg.group_id
@@ -159,37 +160,41 @@ class Tests_Model extends CI_Model {
                 LEFT JOIN generated_test gt ON gt.scheduled_test_id = tsg.scheduled_test_id 
                 WHERE (ts.end_time >= NOW() AND gs.student_id = ".$student_id.")
                 ORDER BY ts.start_time ASC";
-        $query = $this->db->query($sql);
-        $result = $query->result_array();
+            $query = $this->db->query($sql);
+            $result = $query->result_array();
 
-        ChromePhp::log($result);
+            ChromePhp::log($result);
 
-        $now = date("Y-m-d H:i:s");
-        foreach($result as $key => $test){
-            $result[$key]['start_time'] = date("F jS Y H:i", strtotime($test['start_time']));
-            $result[$key]['end_time'] = date("F jS Y H:i", strtotime($test['end_time']));
+            $now = date("Y-m-d H:i:s");
+            foreach($result as $key => $test){
+                $result[$key]['start_time'] = date("F jS Y H:i", strtotime($test['start_time']));
+                $result[$key]['end_time'] = date("F jS Y H:i", strtotime($test['end_time']));
 
-            if($test['result_presentation_type'] == 'end_of_exam'){
-                $result[$key]['result_presentation_type'] = "End of exam";
-            } else if($test['result_presentation_type'] == 'specify_time'){
-                $result[$key]['result_presentation_type'] = date("F jS Y H:i", strtotime($test['result_date']));
-            } else  if($test['result_presentation_type'] == 'manual'){
-                $result[$key]['result_presentation_type'] = "Teacher confirmation";
-            }
+                if($test['result_presentation_type'] == 'end_of_exam'){
+                    $result[$key]['result_presentation_type'] = "End of exam";
+                } else if($test['result_presentation_type'] == 'specify_time'){
+                    $result[$key]['result_presentation_type'] = date("F jS Y H:i", strtotime($test['result_date']));
+                } else  if($test['result_presentation_type'] == 'manual'){
+                    $result[$key]['result_presentation_type'] = "Teacher confirmation";
+                }
 
-            if($test['scheduled_id']){
-                $time_left = $test['test_time'] * 60 - (time() - $test['time_started']);
-                if($time_left <= 0){
-                    $result[$key]['exam_over'] = true;
+                if($test['scheduled_id']){
+                    $time_left = $test['test_time'] * 60 - (time() - $test['time_started']);
+                    if($time_left <= 0 || $test['ended'] == true){
+                        $result[$key]['exam_over'] = true;
+                    }
+                }
+
+                if($now >= $test['start_time'] &&  $now < $test['end_time']){
+                    $result[$key]['exam_started'] = true;
+                } else{
+                    $result[$key]['exam_started'] = false;
                 }
             }
-
-            if($now >= $test['start_time'] &&  $now < $test['end_time']){
-                $result[$key]['exam_started'] = true;
-            } else{
-                $result[$key]['exam_started'] = false;
-            }
+        } else{
+            $result = array('error' => 'not_logged_in');
         }
+
         return $result;
     }
 
@@ -206,7 +211,6 @@ class Tests_Model extends CI_Model {
         $student_id = $params['student_id'];
 
         $random_questions = $this->randomQuestionList($test_id);
-
         $random_exam = serialize($random_questions);
 
         $test = array(
@@ -280,11 +284,12 @@ class Tests_Model extends CI_Model {
     }
 
     private function randomQuestionOrder($test_id){
-        $sql = "SELECT ts.question_id, q.description, qt.page AS 'type' FROM 
+        $sql = "SELECT ts.question_id, q.description, qt.page AS 'type', tq.correct_answer_points, tq.incorrect_answer_points, tq.automatic_eval FROM 
                 tests_questions ts 
                 JOIN question q ON q.id = ts.question_id
                 JOIN question_types qt ON qt.id = q.type
-                WHERE (ts.test_id = ".$test_id.") 
+                JOIN tests_questions tq ON tq.question_id = q.id  
+                WHERE (ts.test_id = ".$test_id." AND tq.test_id = ".$test_id.") 
                 ORDER BY RAND()";
         $query = $this->db->query($sql);
         $questions = $query->result_array();
@@ -300,6 +305,7 @@ class Tests_Model extends CI_Model {
         $query = $this->db->query($sql);
         $test = $query->result_array()[0];
         $all_questions = unserialize($test['random_test']);
+        ChromePhp::log($all_questions);
         $student_id = $this->session->userdata('id');
         $new_question = null;
         foreach($all_questions as $q_key => $question){
@@ -349,7 +355,7 @@ class Tests_Model extends CI_Model {
         $test = $query->result_array()[0];
         $content_unserialized = unserialize($test['random_test']);
 
-        if($test['end_time'] <= date('Y-m-d H:i:s')){
+        if($test['end_time'] <= date('Y-m-d H:i:s') || $test['ended'] == true){
             $test_ended = true;
         } else{
             $test_ended = false;
@@ -406,6 +412,127 @@ class Tests_Model extends CI_Model {
         $answer['student_id'] = $student_id;
 
         $this->db->replace('test_student_answers', $answer);
+    }
+
+    public function updateQuestionPoints($params){
+        $sql = "UPDATE tests_questions ts SET ts.correct_answer_points = ".$params['correct_answer_points'].
+               ", ts.incorrect_answer_points = ".$params['incorrect_answer_points'].", ts.automatic_eval = ".$params['automatic_eval'].
+               " WHERE (ts.question_id = ".$params['question_id']." AND ts.test_id = ".$params['test_id']." )";
+
+        ChromePhp::log($sql);
+        $this->db->query($sql);
+    }
+
+    public function finishExam($test_id){
+        $sql = "UPDATE generated_test g SET g.ended = true 
+                WHERE g.id = ".$test_id;
+        $this->db->query($sql);
+    }
+
+    public function gradeExam($generated_test_id){
+        ChromePhp::log("Grading");
+        $sql = "SELECT * FROM generated_test gt 
+                WHERE gt.id =".$generated_test_id;
+        $query = $this->db->query($sql);
+        $result = $query->result_array()[0];
+        $generated_test = unserialize($result['random_test']);
+
+        ChromePhp::log($generated_test);
+
+        $graded_test = array();
+        foreach($generated_test as $test_question){
+            if($test_question['automatic_eval'] == 1){
+                $graded_test[] = $this->evaluateQuestion($test_question, $generated_test_id, $result['student_id']);
+            } else{
+                $graded_test[] = $test_question;
+                $graded_test['manual_evaluation'] = true;
+            }
+        }
+
+        $graded_test['total_points'] = 0;
+        foreach($graded_test as $graded_question){
+            $graded_test['total_points'] += $graded_question['total_points'];
+        }
+
+        ChromePhp::log($graded_test);
+
+        $test_results = array(
+            'generated_test_id' => $generated_test_id,
+            'result' => serialize(($graded_test)),
+            'fully_evaluated'=> ($graded_test['manual_evaluation'] ? false : true)
+        );
+        $this->db->insert('test_results', $test_results);
+    }
+
+    public function evaluateQuestion($question, $generated_test_id, $student_id){
+        if($question['type'] == "multiple_choice" || $question['type'] == 'true_false'){
+            $sql = "SELECT tsa.* FROM test_student_answers tsa 
+                WHERE (tsa.scheduled_test_id =".$generated_test_id." AND tsa.student_id = ".$student_id." 
+                AND tsa.question_id = ".$question['question_id'].")";
+            $query = $this->db->query($sql);
+            $question_answers = $query->result_array();
+
+            foreach($question_answers as $question_answer){
+                foreach($question['answers'] as $key => $student_answer){
+                    if($student_answer['id'] == $question_answer['subquestion_id']){
+                        $question['answers'][$key]['student_answer'] = $question_answer['answer'];
+                        break;
+                    }
+                }
+            }
+        }
+
+        $correct_answers = 0;
+        $wrong_answers = 0;
+        foreach($question['answers'] as $answer){
+            if($question['type'] == "multiple_choice"){
+                if($answer['answer'] == false){
+                    if(isset($answer['student_answer'])){
+                        $wrong_answers+=1;
+                    }
+                } else{
+                    if(isset($answer['student_answer'])){
+                        if($answer['student_answer'] == $answer['answer']){
+                            $correct_answers+=1;
+                        } else{
+                            $wrong_answers+=1;
+                        }
+                    }
+                }
+            } elseif($question['type'] == "true_false"){
+                if(!isset($answer['student_answer'])){
+                    $wrong_answers++;
+                } else{
+                    if($answer['student_answer'] == $answer['answer']){
+                        ChromePhp::log("CORRECT");
+                        $correct_answers+= 1;
+                    } else{
+                        $wrong_answers+= 1;
+                    }
+                }
+            }
+        }
+
+        $question['correct_answers'] = $correct_answers;
+        $question['wrong_answers'] = $wrong_answers;
+
+        $positive_points = $correct_answers * floatval($question['correct_answer_points']);
+        $negative_points = $wrong_answers * floatval($question['incorrect_answer_points']);
+        $total_points = $positive_points + $negative_points;
+
+        $question['positive_points'] = $positive_points;
+        $question['negative_points'] = $negative_points;
+        $question['total_points'] = $total_points;
+
+
+        /*$sql = "SELECT tsa.* FROM test_student_answers tsa
+                WHERE (tsa.scheduled_test_id =".$generated_test_id." AND student_id = ".$student_id." AND question_id = ".$question['question_id'].")";
+        $query = $this->db->query($sql);
+        $question_answer = $query->result_array()[0];
+        ChromePhp::log($question_answer);*/
+        ChromePhp::log($question);
+
+        return $question;
     }
 
 

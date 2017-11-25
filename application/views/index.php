@@ -3,7 +3,7 @@
     <div class="container" id="maincontent" tabindex="-1">
         <div class="row">
             <div class="col-lg-12">
-                <div class="intro-text">
+                <div class="intro-text text-center">
                     <div class="row">
                         <h1 class="name grettings_message">
                             <?php

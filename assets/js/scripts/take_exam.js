@@ -17,6 +17,25 @@ $(function() {
         $('#pagination-container').pagination('next')
     });
 
+    $('#confirm_finish_exam').click(function(){
+        var ajax = $.ajax({
+            method: "POST",
+            url: BASE_URL + "exams/finishExam",
+            data: {
+                test_id: test_id
+            }
+        });
+
+        ajax.done(function() {
+            window.location.href = BASE_URL + "exams";
+        });
+
+        // callback handler that will be called on failure
+        ajax.fail(function(jqXHR) {
+            console.log(jqXHR);
+        });
+    });
+
 
     $("#save_test").click(function(){
         var test_name = $("#test_name").val();
@@ -170,8 +189,8 @@ function startClock(time){
                 console.log("Start");
             },
             stop: function() {
-                console.log("Stop");
-            },
+                window.location.replace(BASE_URL + 'exams');
+            }
         }
     });
 
@@ -262,7 +281,7 @@ function getQuestionsForTest(test_id){
 
     request.done(function (response, textStatus, jqXHR) {
         if(response === 'exam_error'){
-            window.location.replace(BASE_URL + 'exams');
+            window.location.replace(BASE_URL + 'esxams');
         }
         var questions = JSON.parse(response);
         startClock(questions.time_left);
@@ -303,9 +322,9 @@ function generateTrueFalseQuestion(question, action){
         var false_answer = '';
         if(answer != null){
             if(answer == 'true'){
-                var true_answer = 'selected';
+                true_answer = 'selected';
             } else{
-                var false_answer = 'selected';
+                false_answer = 'selected';
             }
         }
 
@@ -347,9 +366,22 @@ function generateQuestionHeading(question, type){
 
     }
 
+    if(question.incorrect_answer_points < 0){
+        var incorrect_question =
+            '<div class="row">'+
+            '<label class = "left exam_question_description">You will lose <strong class = "incorrect_answer_desc">'+ Math.abs(question.incorrect_answer_points)+' point(s) </strong>for incorrect answer.</label>'+
+            '</div>';
+    } else{
+        var incorrect_question = "";
+    }
+
     var question_html = '<div class="row create_row panel panel-default question_panel">' +
-        '<div class="panel-heading"><strong>'+ question_name +'</strong></div>'+
+        '<div class="panel-heading clearfix"><strong>'+ question_name +'</strong><button class = "btn btn-info right" id = "finish_test" data-toggle="modal" data-target="#finish_test_modal">Finish test</button></div>'+
         '<div class="panel-body">'+
+        '<div class="row">'+
+        '<label class = "left exam_question_description">You will receive <strong class = "correct_answer_desc">'+question.correct_answer_points+' point(s) </strong>for answering correctly.</label>'+
+        '</div>'+
+        incorrect_question +
         '<div class="row">'+
         '<label class = "left exam_question_description">Description:</label>'+
         '</div>'+

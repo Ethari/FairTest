@@ -9,9 +9,12 @@ class Questions_Model extends CI_Model {
         return $query->result_array();
     }
 
-    public function getQuestionDetails($id){
-        $sql = "SELECT * FROM question WHERE id = " . $id;
+    public function getQuestionDetails($id, $test_id){
+        $sql = "SELECT q.*, tq.correct_answer_points, tq.incorrect_answer_points, tq.automatic_eval FROM question q " .
+               "LEFT JOIN tests_questions tq ON tq.question_id = q.id " .
+               "WHERE (q.id = " . $id . " AND tq.test_id = ".$test_id.") ";
         $query = $this->db->query($sql);
+        ChromePhp::log($sql);
         $result = $query->result_array()[0];
 
         switch($result['type']){

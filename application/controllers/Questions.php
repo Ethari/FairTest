@@ -94,7 +94,8 @@ class Questions extends CI_Controller {
 
     public function get_question_details(){
         $id = $_POST['id'];
-        $question_details = $this->Questions_Model->getQuestionDetails($id);
+        $test_id = $_POST['test_id'];
+        $question_details = $this->Questions_Model->getQuestionDetails($id, $test_id);
         echo json_encode($question_details);
     }
 

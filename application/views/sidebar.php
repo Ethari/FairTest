@@ -1,5 +1,5 @@
 <div id = "wrapper" class = "toggled" >
-    <div id="sidebar-wrapper" style = "margin-top: 75px;">
+    <div id="sidebar-wrapper">
         <ul class="sidebar-nav">
             <li>
                 <a href="#">SCHEDULED EXAMS</a>

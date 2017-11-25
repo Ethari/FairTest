@@ -107,6 +107,7 @@ p {
 
 #sidebar-wrapper{
     background-color: #42586E !important;
+    margin-top: 50px;
 }
 
 .sidebar-nav>.sidebar-brand a, .sidebar-nav li a {
@@ -182,5 +183,32 @@ p {
     .tf_question_selection {
         padding: 0;
     }
+}
+
+.modal {
+    text-align: center;
+}
+
+@media screen and (min-width: 768px) {
+    .modal:before {
+        display: inline-block;
+        vertical-align: middle;
+        content: " ";
+        height: 100%;
+    }
+}
+
+.modal-dialog {
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.correct_answer_desc{
+    color: green;
+}
+
+.incorrect_answer_desc{
+    color: red;
 }
 
