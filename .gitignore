@@ -1,6 +1,6 @@
-/user_guide
-/.idea
-/application/config/database.php
-/application/config/config.php
-/application/config
-/application/.htaccess
+user_guide
+.idea
+application/config/database.php
+application/config/config.php
+application/config
+application/.htaccess
