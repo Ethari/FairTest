@@ -15,6 +15,7 @@ class Admin extends CI_Controller {
     {
         $page = 'home';
         $scheduled_tests['tests'] = $this->Tests_Model->getScheduledTests(1);
+        $scheduled_tests['ungraded_tests'] = $this->Tests_Model->getUngradedTests(1);
         $this->loader->generateAdminPage($page, $scheduled_tests);
         ChromePhp::log($scheduled_tests);
     }
@@ -35,21 +36,18 @@ class Admin extends CI_Controller {
         }
     }
 
-    public function test(){
-        $tests = array(
-            "42",
-            1337,
-            "1e4",
-            "not numeric",
-            9.1
-        );
+    public function gradeTest($test_id){
+        $test['test'] = $this->Tests_Model->getUngradedTest($test_id);
+        $this->loader->generateAdminPage('grade_test', $test);
 
-        foreach ($tests as $element) {
-            if (is_numeric($element)) {
-                echo "'{$element}' is numeric <br>", PHP_EOL;
-            } else {
-                echo "'{$element}' is NOT numeric <br>", PHP_EOL;
-            }
-        }
+    }
+
+    public function getUngradedTest(){
+        $test_id = $_POST['id'];
+        $test = $this->Tests_Model->getUngradedTest($test_id);
+        unset($test['result']['manual_evaluation']);
+        unset($test['result']['total_points']);
+        ChromePhp::log($test);
+        echo json_encode($test);
     }
 }

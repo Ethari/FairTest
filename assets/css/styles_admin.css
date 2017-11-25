@@ -86,3 +86,53 @@
 .saveQuestionBtn{
     margin-top: 30px;
 }
+
+.left{
+    float: left !important;
+}
+
+.right{
+    float: right !important;
+}
+
+.exam_question_description{
+    margin-left: 15px;
+    margin-bottom: 10px;
+}
+
+#pagination-container{
+    display: inline-block;
+    margin-bottom: 10px;
+}
+.correct_answer_desc{
+    color: green;
+}
+
+.incorrect_answer_desc{
+    color: red;
+}
+
+
+.nopadding{
+    padding: 0;
+}
+
+.tf-select{
+    margin-right: 10px;
+}
+
+.mc_question_text{
+    margin-left: 5px;
+}
+
+.tf_question_selection {
+    padding-right: 20px;
+}
+
+.correct_row{
+    background-color: #ccffce !important;
+}
+
+.incorrect_row{
+    background-color: #ffe8e8 !important;
+}

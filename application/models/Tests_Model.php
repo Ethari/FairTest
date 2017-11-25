@@ -444,7 +444,7 @@ class Tests_Model extends CI_Model {
             if($test_question['automatic_eval'] == 1){
                 $graded_test[] = $this->evaluateQuestion($test_question, $generated_test_id, $result['student_id']);
             } else{
-                $graded_test[] = $test_question;
+                $graded_test[] = $this->getQuestionAnswer($test_question, $generated_test_id, $result['student_id']);
                 $graded_test['manual_evaluation'] = true;
             }
         }
@@ -462,6 +462,30 @@ class Tests_Model extends CI_Model {
             'fully_evaluated'=> ($graded_test['manual_evaluation'] ? false : true)
         );
         $this->db->insert('test_results', $test_results);
+    }
+
+    public function getQuestionAnswer($question, $generated_test_id, $student_id){
+        ChromePhp::log("Manual");
+        $sql = "SELECT tsa.* FROM test_student_answers tsa 
+                WHERE (tsa.scheduled_test_id =".$generated_test_id." AND tsa.student_id = ".$student_id." 
+                AND tsa.question_id = ".$question['question_id'].")";
+        $query = $this->db->query($sql);
+        $question_answers = $query->result_array();
+
+        if($question['type'] == "multiple_choice" || $question['type'] == 'true_false'){
+            foreach($question_answers as $question_answer){
+                foreach($question['answers'] as $key => $student_answer){
+                    if($student_answer['id'] == $question_answer['subquestion_id']){
+                        $question['answers'][$key]['student_answer'] = $question_answer['answer'];
+                        break;
+                    }
+                }
+            }
+        } else{
+            $question['answer'] = $question_answers[0]['answer'];
+        }
+        ChromePhp::log($question);
+        return $question;
     }
 
     public function evaluateQuestion($question, $generated_test_id, $student_id){
@@ -533,6 +557,43 @@ class Tests_Model extends CI_Model {
         ChromePhp::log($question);
 
         return $question;
+    }
+
+    public function getUngradedTests($teacher_id){
+        ChromePhp::log("ungraded");
+        $sql = "SELECT ts.*, CONCAT(s.firstName, ' ', s.lastName) AS student_name, t.name as 'test_name', t.topic FROM test_results ts
+                JOIN generated_test gt ON gt.scheduled_test_id = ts.generated_test_id
+                LEFT JOIN test_schedule tsch ON tsch.id = gt.scheduled_test_id
+                LEFT JOIN test t ON t.id = tsch.test_id
+                JOIN student s ON s.id = gt.student_id 
+                WHERE ts.fully_evaluated = FALSE ";
+        $query = $this->db->query($sql);
+        $results = $query->result_array();
+
+        foreach($results as $key=>$result){
+            $results[$key]['result'] = unserialize($result['result']);
+        }
+        ChromePhp::log($results);
+
+        return $results;
+    }
+
+    public function getUngradedTest($test_id){
+        ChromePhp::log("ungraded");
+        $sql = "SELECT ts.*, CONCAT(s.firstName, ' ', s.lastName) AS student_name, t.name as 'test_name', t.topic FROM test_results ts
+                JOIN generated_test gt ON gt.scheduled_test_id = ts.generated_test_id
+                LEFT JOIN test_schedule tsch ON tsch.id = gt.scheduled_test_id
+                LEFT JOIN test t ON t.id = tsch.test_id
+                JOIN student s ON s.id = gt.student_id 
+                WHERE ts.generated_test_id = " . $test_id;
+        $query = $this->db->query($sql);
+        $results = $query->result_array()[0];
+
+        $results['result'] = unserialize($results['result']);
+
+        ChromePhp::log($results);
+
+        return $results;
     }
 
 
