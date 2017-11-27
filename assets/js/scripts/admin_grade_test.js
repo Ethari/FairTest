@@ -166,6 +166,8 @@ function getQuestionsForTest(){
                 generateMultipleChoiceQuestion(value);
             } else if(type === "open_question"){
                 generateOpenQuestion(value);
+            } else if(type ==="parametric"){
+                generateParametricQuestion(value);
             }
         });
 
@@ -216,6 +218,9 @@ function generateQuestionHeading(question, type){
             break;
         case 'true_false':
             question_name = "True or False question";
+            break;
+        case 'parametric':
+            question_name = "Parametric question";
             break;
         case 'open':
             question_name = "Open question";
@@ -289,6 +294,25 @@ function generateOpenQuestion(question){
 
     var question_html = generateQuestionHeading(question, 'open');
     question_html += "<textarea readonly question_id = '"+question.question_id+"' class = 'form-control open_question_answer' rows = '4' placeholder = 'Type your answer here...'>"+question.answer+"</textarea>";
+    question_html += questionClose(question);
+    //$(".questions_field").append(question_html);
+
+    console.log("Pushing");
+    console.log(question);
+    test_questions.push([question_html, question.question_id]);
+    console.log(test_questions);
+}
+
+function generateParametricQuestion(question){
+
+    var question_html = generateQuestionHeading(question, 'parametric');
+    question_html += "<textarea readonly question_id = '"+question.question_id+"' class = 'form-control parametric_question_answer' rows = '4' placeholder = 'Type your answer here...'>"+question.answer+"</textarea>";
+    question_html +='<div class="row">';
+    question_html +='<label class = "left exam_question_description" style = "margin-top: 10px;">Calculated answer: <strong>'+question.calculated_result+'</strong></label>';
+    question_html +='</div>';
+    question_html +='<div class="row">';
+    question_html +='<label class = "left exam_question_description" style = "margin-top: 10px;">Formula: <strong>'+question.parametric_formula+'</strong></label>';
+    question_html +='</div>';
     question_html += questionClose(question);
     //$(".questions_field").append(question_html);
 

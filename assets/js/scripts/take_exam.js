@@ -161,6 +161,20 @@ function saveAnswers(test_id){
         saveAnswerAjax(data);
     });
 
+    $(".exam_id").on('focusout', '.parametric_question_answer', function(){
+        var answer = $(this).val();
+        var question_id = $(this).attr('question_id');
+
+        var data = {
+            answer: answer,
+            question_id: question_id,
+            scheduled_test_id: test_id
+        };
+        console.log("Focused out");
+        console.log(data);
+        saveAnswerAjax(data);
+    });
+
 }
 
 function saveAnswerAjax(answer){
@@ -260,6 +274,8 @@ function getSpecificQuestion(question_id, callback){
             question_html = generateMultipleChoiceQuestion(question, 'return');
         } else if(type === "open_question"){
             question_html = generateOpenQuestion(question, 'return');
+        } else if(type === "parametric"){
+            question_html = generateParametricQuestion(question, 'return');
         }
         callback(question_html);
     });
@@ -297,6 +313,8 @@ function getQuestionsForTest(test_id){
                 generateMultipleChoiceQuestion(value);
             } else if(type === "open_question"){
                 generateOpenQuestion(value);
+            } else if(type === "parametric"){
+                generateParametricQuestion(value);
             }
         });
 
@@ -363,6 +381,10 @@ function generateQuestionHeading(question, type){
             break;
         case 'open':
             question_name = "Open question";
+            break;
+        case 'parametric':
+            question_name = "Parametric question";
+            break;
 
     }
 
@@ -434,6 +456,26 @@ function generateOpenQuestion(question, action){
 
     var question_html = generateQuestionHeading(question, 'open');
     question_html += "<textarea question_id = '"+question.question_id+"'class = 'form-control open_question_answer' rows = '4' placeholder = 'Type your answer here...'>"+answer+"</textarea>";
+    question_html += questionClose(question);
+    //$(".questions_field").append(question_html);
+
+    if(action == 'return'){
+        return question_html;
+    } else{
+        test_questions.push([question_html, question.question_id]);
+    }
+}
+
+function generateParametricQuestion(question, action){
+    console.log("Generating parametric");
+    if(question.selected_answer != null){
+        var answer = question.selected_answer;
+    } else{
+        var answer = "";
+    }
+
+    var question_html = generateQuestionHeading(question, 'parametric');
+    question_html += "<textarea question_id = '"+question.question_id+"'class = 'form-control parametric_question_answer' rows = '4' placeholder = 'Type your answer here...'>"+answer+"</textarea>";
     question_html += questionClose(question);
     //$(".questions_field").append(question_html);
 

@@ -21,6 +21,13 @@ class Account_Model extends CI_Model {
         return $id;
     }
 
+    public function getStudentID($user_id){
+        $sql = "SELECT s.studentIndex FROM student s WHERE s.id = " . $user_id;
+        $query = $this->db->query($sql);
+        $student_array = $query->result_array()[0];
+        return $student_array['studentIndex'];
+    }
+
     public function login($user){
 
         $this->db->where('studentIndex',$user['username']);

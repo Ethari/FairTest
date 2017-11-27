@@ -92,11 +92,37 @@ class Questions extends CI_Controller {
         $this->session->set_flashdata('questions_added', $description);
     }
 
+    public function create_parametric_question(){
+        $question = $_POST;
+        $php_formula = $question['php_formula'];
+        $parameters = $question['parameters'];
+        $tags = $question['tags'];
+        $description = $question['description'];
+
+        $attributes = array(
+            'description' => $description,
+            'type' => 4,
+            'tags' => $tags,
+            'parametric_formula' => $php_formula
+        );
+
+        $this->Questions_Model->createParametricQuestion($attributes, $parameters);
+        $this->session->set_flashdata('questions_added', $description);
+    }
+
     public function get_question_details(){
         $id = $_POST['id'];
         $test_id = $_POST['test_id'];
         $question_details = $this->Questions_Model->getQuestionDetails($id, $test_id);
         echo json_encode($question_details);
+    }
+
+    public function test_parametric_formula(){
+        $formula = $_POST;
+        ChromePhp::log($formula);
+        $result = $this->Questions_Model->calculateParametricFormula($formula);
+        ChromePhp::log($result);
+        echo $result;
     }
 
 }

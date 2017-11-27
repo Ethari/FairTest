@@ -20,6 +20,7 @@ class Loader extends CI_Model {
             $this->load->view('/admin/questions/true_false');
             $this->load->view('/admin/questions/multiple_choice');
             $this->load->view('/admin/questions/open_question');
+            $this->load->view('/admin/questions/parametric');
             $this->load->view('/admin/questions/end_of_question');
         }
 
@@ -35,7 +36,7 @@ class Loader extends CI_Model {
         $this->load->view('header');
         $this->load->view('navbar');
         ChromePhp::log($page);
-        if($page == 'exams' || $page == 'results'){
+        if($page == 'exams' || $page == 'results' || $page == 'view_test'){
             $this->load->view('sidebar');
         }
         $this->load->view($page, $data);

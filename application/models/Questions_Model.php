@@ -10,7 +10,7 @@ class Questions_Model extends CI_Model {
     }
 
     public function getQuestionDetails($id, $test_id){
-        $sql = "SELECT q.*, tq.correct_answer_points, tq.incorrect_answer_points, tq.automatic_eval FROM question q " .
+        $sql = "SELECT q.*, tq.correct_answer_points, tq.incorrect_answer_points, tq.automatic_eval, q.parametric_formula FROM question q " .
                "LEFT JOIN tests_questions tq ON tq.question_id = q.id " .
                "WHERE (q.id = " . $id . " AND tq.test_id = ".$test_id.") ";
         $query = $this->db->query($sql);
@@ -27,11 +27,17 @@ class Questions_Model extends CI_Model {
             case 3:
                 return $result;
                 break;
+            case 4:
+                $additional_data = "SELECT * FROM parametric_question WHERE question_id = " . $result['id'];
         }
 
         $query2 = $this->db->query($additional_data);
 
-        $result['questions'] = $query2->result_array();
+        if($result['type'] != 4){
+            $result['questions'] = $query2->result_array();
+        } else{
+            $result['parameters'] = $query2->result_array();
+        }
 
         return $result;
     }
@@ -134,11 +140,49 @@ class Questions_Model extends CI_Model {
 
     }
 
+    public function createParametricQuestion($attributes, $parameters){
+        ChromePhp::log($attributes);
+        $id = $this->insertQuestionBase($attributes);
+        foreach($parameters as $param){
+            $param_name = $param['param'];
+            $param_values = serialize($param['value']);
+
+            $insert_question = array(
+                'parameter' => $param_name,
+                'parameter_values' => $param_values,
+                'question_id' => $id
+            );
+
+            ChromePhp::log($insert_question);
+            $this->db->insert('parametric_question', $insert_question);
+        }
+
+    }
+
     public function deleteStudent($id){
         $this->db->where('id', $id);
         $this->db->delete('student');
 
         $this->db->where('student_id', $id);
         $this->db->delete('groups_students');
+    }
+
+    public function calculateParametricFormula($formula){
+        $php_formula = $formula['php_formula'];
+        $params = array();
+        foreach($formula['question_params'] as $question_param){
+            $params[$question_param['param']] = $question_param['value'];
+        }
+
+        ChromePhp::log($params);
+
+        foreach($params as $key => $param){
+            ${$key} = $param;
+        }
+
+        $result = eval($php_formula);
+        ChromePhp::log($params);
+
+        return $result;
     }
 }

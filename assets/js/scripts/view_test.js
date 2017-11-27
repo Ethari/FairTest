@@ -221,17 +221,17 @@ function generateQuestionHeading(question, type){
     if(question.incorrect_answer_points < 0){
         var incorrect_question =
             '<div class="row">'+
-            '<label class = "left exam_question_description">Student should lose <strong class = "incorrect_answer_desc">'+ Math.abs(question.incorrect_answer_points)+' point(s) </strong>for incorrect answer.</label>'+
+            '<label class = "left exam_question_description"><strong class = "incorrect_answer_desc">'+ Math.abs(question.incorrect_answer_points)+' point(s) </strong> - incorrect answer.</label>'+
             '</div>';
     } else{
         var incorrect_question = "";
     }
 
     var question_html = '<div class="row create_row panel panel-default question_panel">' +
-        '<div class="panel-heading clearfix"><strong>'+ question_name +'</strong><button class = "btn btn-info right" id = "finish_test" data-toggle="modal" data-target="#finish_test_modal">Finish test</button></div>'+
+        '<div class="panel-heading clearfix"><strong>'+ question_name +'</strong><div class = "right">Your score: <strong class = "correct_answer_desc">'+question.total_points+'/'+question.correct_answer_points+' points</strong></div></div>'+
         '<div class="panel-body">'+
         '<div class="row">'+
-        '<label class = "left exam_question_description">Student should receive <strong class = "correct_answer_desc">'+question.correct_answer_points+' point(s) </strong>for answering correctly.</label>'+
+        '<label class = "left exam_question_description"><strong class = "correct_answer_desc">'+question.correct_answer_points+' point(s) </strong> - correct answer</label>'+
         '</div>'+
         incorrect_question +
         '<div class="row">'+
@@ -300,7 +300,6 @@ function questionClose(question){
         '</div>'+
         '<div class="panel-footer clearfix">' +
         '<label class = "left" style = "margin-right: 10px; margin-top: 5px;">Points received: '+question.total_points+' </label>'+
-        '<button class = "btn btn-primary right save_points" id = "'+question.question_id+'">Save</button>' +
         '</div>' +
         '</div>';
 

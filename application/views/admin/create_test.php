@@ -50,7 +50,7 @@
                             echo "
                                 <tr>
                                     <td class = 'col-md-3' style = 'overflow: scroll;'><div class = 'questions_row'>".$question['description']."</div></td>
-                                    <td class = 'col-md-3'>".$question['type']."</td>
+                                    <td class = 'col-md-3'>".$question['question_type_name']."</td>
                                     <td class = 'col-md-3'>".$question['tags']."</td>
                                     <td class = 'col-md-2'>".$question['date_added']."</td>
                                     <td class = 'col-md-1'><button id = ".$question['id']." class='btn btn-primary addQuestion'>Add</button></a></td>

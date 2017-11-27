@@ -210,6 +210,8 @@ function getQuestionsForTest(){
                 generateMultipleChoiceQuestion(id);
             } else if(type === "3"){
                 generateOpenQuestion(id);
+            } else if(type === "4"){
+                generateParametricQuestion(id);
             }
         });
     });
@@ -343,6 +345,42 @@ function generateOpenQuestion(id){
             '<button class = "btn btn-danger deleteQuestionBtn right" id = "'+question.id+'">Delete</button>' +
             '</div>'+
             '<div class="panel-body">'+ question.description;
+
+        question_html += questionClose(question);
+        //$(".questions_field").append(question_html);
+
+        test_questions.push([question_html, id]);
+
+    });
+
+    // callback handler that will be called on failure
+    request.fail(function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR);
+    });
+}
+
+function generateParametricQuestion(id){
+    var question;
+
+    var request = $.ajax({
+        method: "POST",
+        url: BASE_URL + "questions/get_question_details",
+        data: {
+            id: id,
+            test_id: test_id
+        }
+    });
+
+    request.done(function (response, textStatus, jqXHR) {
+        question = JSON.parse(response);
+
+        var question_html = '<div class="row create_row panel panel-default question_panel">' +
+            '<div class="panel-heading clearfix">' +
+            'Parametric Question' +
+            '<button class = "btn btn-danger deleteQuestionBtn right" id = "'+question.id+'">Delete</button>' +
+            '</div>'+
+            '<div class="panel-body">'+ question.description +
+            '<div class="row" style = "padding-left: 15px;"> Parametric formula: <strong>'+ question.parametric_formula + '</strong></div>';
 
         question_html += questionClose(question);
         //$(".questions_field").append(question_html);

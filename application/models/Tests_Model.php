@@ -13,7 +13,9 @@ class Tests_Model extends CI_Model {
     }
 
     public function getAvailableQuestions($id){
-        $sql = "SELECT * FROM question WHERE id NOT IN (SELECT question_id FROM tests_questions WHERE test_id = ".$id.") ";
+        $sql = "SELECT q.*, qt.name AS 'question_type_name' FROM question q 
+                JOIN question_types qt ON qt.id = q.type
+                WHERE q.id NOT IN (SELECT question_id FROM tests_questions WHERE test_id = ".$id.") ";
         $query = $this->db->query($sql);
         ChromePhp::log($sql);
         ChromePhp::log($query->result_array());
@@ -233,7 +235,6 @@ class Tests_Model extends CI_Model {
         return $id;
 
         ChromePhp::log($random_questions);
-        ChromePhp::log($random_exam);
 
     }
 
@@ -282,6 +283,10 @@ class Tests_Model extends CI_Model {
                     break;
                 case 'open_question':
                     break;
+                case 'parametric':
+                    $parametric_question = $this->generateParametricQuestion($question);
+                    $questions[$key] = $parametric_question;
+                    break;
 
             }
         }
@@ -290,8 +295,44 @@ class Tests_Model extends CI_Model {
 
     }
 
+    private function generateParametricQuestion($question){
+        $sql = "SELECT * 
+                FROM parametric_question pq 
+                WHERE(pq.question_id = ".$question['question_id'].")";
+        $query = $this->db->query($sql);
+        $parameters = $query->result_array();
+
+        foreach($parameters as $key => $parameter){
+            $parameters[$key]['parameter_values'] = unserialize($parameter['parameter_values']);
+            if($parameters[$key]['parameter_values'] == 'student_id'){
+                $user_id = $this->session->userdata('id');
+                $this->load->model('Account_Model');
+                $student_id = $this->Account_Model->getStudentID($user_id);
+
+                $parameters[$key]['rolled_value'] = $student_id;
+            } else{
+                $parameters[$key]['rolled_value'] = $parameters[$key]['parameter_values'][array_rand($parameters[$key]['parameter_values'])];
+            }
+        }
+
+        foreach($parameters as $parameter){
+            $question['description'] = str_replace('{{'.$parameter['parameter'].'}}', $parameter['rolled_value'], $question['description']);
+            ${$parameter['parameter']} = $parameter['rolled_value'];
+        }
+
+        $result = eval($question['parametric_formula']);
+        $question['parameters'] = $parameters;
+        $question['calculated_result'] = $result;
+
+        ChromePhp::log("PARAMETRIC");
+        ChromePhp::log($question);
+
+        return $question;
+
+    }
+
     private function randomQuestionOrder($test_id){
-        $sql = "SELECT ts.question_id, q.description, qt.page AS 'type', tq.correct_answer_points, tq.incorrect_answer_points, tq.automatic_eval FROM 
+        $sql = "SELECT ts.question_id, q.parametric_formula, q.description, qt.page AS 'type', tq.correct_answer_points, tq.incorrect_answer_points, tq.automatic_eval FROM 
                 tests_questions ts 
                 JOIN question q ON q.id = ts.question_id
                 JOIN question_types qt ON qt.id = q.type
@@ -473,7 +514,6 @@ class Tests_Model extends CI_Model {
     }
 
     public function getQuestionAnswer($question, $generated_test_id, $student_id){
-        ChromePhp::log("Manual");
         $sql = "SELECT tsa.* FROM test_student_answers tsa 
                 WHERE (tsa.scheduled_test_id =".$generated_test_id." AND tsa.student_id = ".$student_id." 
                 AND tsa.question_id = ".$question['question_id'].")";
@@ -512,49 +552,64 @@ class Tests_Model extends CI_Model {
                     }
                 }
             }
-        }
 
-        $correct_answers = 0;
-        $wrong_answers = 0;
-        foreach($question['answers'] as $answer){
-            if($question['type'] == "multiple_choice"){
-                if($answer['answer'] == false){
-                    if(isset($answer['student_answer'])){
-                        $wrong_answers+=1;
-                    }
-                } else{
-                    if(isset($answer['student_answer'])){
-                        if($answer['student_answer'] == $answer['answer']){
-                            $correct_answers+=1;
-                        } else{
+            $correct_answers = 0;
+            $wrong_answers = 0;
+            foreach($question['answers'] as $answer){
+                if($question['type'] == "multiple_choice"){
+                    if($answer['answer'] == false){
+                        if(isset($answer['student_answer'])){
                             $wrong_answers+=1;
+                        }
+                    } else{
+                        if(isset($answer['student_answer'])){
+                            if($answer['student_answer'] == $answer['answer']){
+                                $correct_answers+=1;
+                            } else{
+                                $wrong_answers+=1;
+                            }
+                        }
+                    }
+                } elseif($question['type'] == "true_false"){
+                    if(!isset($answer['student_answer'])){
+                        $wrong_answers++;
+                    } else{
+                        if($answer['student_answer'] == $answer['answer']){
+                            ChromePhp::log("CORRECT");
+                            $correct_answers+= 1;
+                        } else{
+                            $wrong_answers+= 1;
                         }
                     }
                 }
-            } elseif($question['type'] == "true_false"){
-                if(!isset($answer['student_answer'])){
-                    $wrong_answers++;
-                } else{
-                    if($answer['student_answer'] == $answer['answer']){
-                        ChromePhp::log("CORRECT");
-                        $correct_answers+= 1;
-                    } else{
-                        $wrong_answers+= 1;
-                    }
-                }
+            }
+
+            $question['correct_answers'] = $correct_answers;
+            $question['wrong_answers'] = $wrong_answers;
+
+            $positive_points = $correct_answers * floatval($question['correct_answer_points']);
+            $negative_points = $wrong_answers * floatval($question['incorrect_answer_points']);
+            $total_points = $positive_points + $negative_points;
+
+
+            $question['positive_points'] = $positive_points;
+            $question['negative_points'] = $negative_points;
+            $question['total_points'] = $total_points;
+        }
+        else if($question['type'] == "parametric"){
+            $sql = "SELECT tsa.* FROM test_student_answers tsa 
+                WHERE (tsa.scheduled_test_id =".$generated_test_id." AND tsa.student_id = ".$student_id." 
+                AND tsa.question_id = ".$question['question_id'].")";
+            $query = $this->db->query($sql);
+            $question_answer = $query->result_array()[0];
+            $question['answer'] = $question_answer['answer'];
+            if(trim($question['answer']) == $question['calculated_result']){
+                $question['total_points'] = $question['correct_answer_points'];
+            } else{
+                $question['total_points'] = $question['incorrect_answer_points'];
             }
         }
 
-        $question['correct_answers'] = $correct_answers;
-        $question['wrong_answers'] = $wrong_answers;
-
-        $positive_points = $correct_answers * floatval($question['correct_answer_points']);
-        $negative_points = $wrong_answers * floatval($question['incorrect_answer_points']);
-        $total_points = $positive_points + $negative_points;
-
-        $question['positive_points'] = $positive_points;
-        $question['negative_points'] = $negative_points;
-        $question['total_points'] = $total_points;
 
 
         /*$sql = "SELECT tsa.* FROM test_student_answers tsa
@@ -634,12 +689,16 @@ class Tests_Model extends CI_Model {
         }
 
         $fully_evaluated = true;
+        ChromePhp::log("Fully eval");
+        ChromePhp::log($result['result']);
         foreach($result['result'] as $key => $question){
             if($key === 'manual_evaluation' || $key === 'total_points'){
                 continue;
             }
 
-            if(!isset($question['total_points'])){
+            if(!isset($result['result'][$key]['total_points'])){
+                ChromePhp::log("NO TOTAL POINTS");
+                ChromePhp::log($result['result']);
                 $fully_evaluated = false;
                 unset($result['result']['fully_evaluated']);
             }

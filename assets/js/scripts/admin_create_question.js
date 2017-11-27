@@ -23,6 +23,118 @@ $(function() {
         ]
     });
 
+    $(".parametric").on("click", ".parameter_value_checkbox", function(){
+        var param = $(this).attr('param_id');
+        if($(this).prop("checked") === true){
+            $("#"+param).prop("disabled", true);
+        } else{
+            $("#"+param).prop("disabled", false);
+        }
+    });
+
+    $(".parametric").on("click", "#test_parametric_answer", function(){
+        var php_formula = $("#php_formula").val();
+        var question_params = [];
+        var values_filled = true;
+
+        $( ".test_answer_input" ).each(function(){
+            var id = $(this).attr('id');
+            var id_split = id.split('_');
+            var answer_id = id_split[0];
+            var answer_value = $(this).val();
+
+            if(answer_value === ""){
+                values_filled = false;
+            }
+
+
+            var element = {};
+            element.param = answer_id;
+            element.value = answer_value;
+
+            question_params.push(element);
+        });
+
+        console.log(question_params);
+
+        if(!values_filled){
+            alert("Some of the values are missing");
+        } else{
+            var request = $.ajax({
+                method: "POST",
+                url: BASE_URL + "questions/test_parametric_formula",
+                data: {
+                    php_formula: php_formula,
+                    question_params : question_params
+                }
+            });
+
+            request.done(function (result) {
+                console.log(result);
+                $(".result_text").html(result);
+            });
+
+            // callback handler that will be called on failure
+            request.fail(function (jqXHR) {
+                alert(jqXHR.responseText);
+            });
+        }
+
+    });
+
+    $("#search_parameters").click(function(){
+        var content = tinyMCE.activeEditor.getContent({format: 'text'});
+        console.log(content);
+        var reg = /{{([^\)])}}/g;
+        var matches = content.match(reg);
+
+        var list_content = "";
+        var test_values = '<tr>'+
+                            '<td>' +
+                                '<div class = "col-sm-10">' +
+                                    '<input class = "form-control" id = "php_formula" value = "return(Your PHP code here);">' +
+                                '</div>' +
+                                '<div class = "col-sm-2">' +
+                                    '<button class = "btn btn-primary" id = "test_parametric_answer">Test</button>' +
+                                '</div>' +
+                            '</td>' +
+                          '</tr>';
+        if(matches != null){
+            var number_of_params = matches.length;
+            for (var i = 0; i < number_of_params; i++)
+            {
+                var param = matches[i].replace(/[{}]+/g, '');
+                list_content += "<tr>" +
+                                    "<td>"+param+"</td>"+
+                                    "<td>" +
+                                        "<input id = '"+param+"' class = 'form-control parameter_values' placeholder = 'e.g. 1,2,3'>" +
+                                    "</td>"+
+                                    "<td class = 'text-center'>" +
+                                        "<input type = 'checkbox' param_id = '"+param+"' class = 'parameter_value_checkbox'>" +
+                                    "</td>"+
+                                "</tr>";
+                test_values += "<tr>" +
+                                    "<td>" +
+                                        "<div class = 'col-sm-1 tex-center'>"+
+                                            param+
+                                        "</div>" +
+                                        "<div class = 'col-sm-2'>" +
+                                            "<input id = '"+param+"_test' class = 'test_answer_input form-control'>" +
+                                        "</div>"+
+                                    "</td>"+
+                                "</tr>";
+                console.log(param);
+            }
+            test_values += "<tr><td>Result: <strong class = 'result_text'></strong></td></tr>"
+        } else{
+            list_content += "<tr><td class = 'text-center'>No parameters detected.</td><td></td><td></td></tr>"
+        }
+
+        $("#parameters_table").html(list_content);
+        $("#parametric_answer").html(test_values);
+
+    });
+
     $("#true_false_form").validate({
         submitHandler: function (form) {
             var form = $("#true_false_form").serializeArray();
@@ -51,7 +163,11 @@ $(function() {
 
         if(type == 'open_question'){
             submitOpenQuestion();
-        } else{
+        }
+        else if(type == 'parametric'){
+            submitParametricQuestion();
+        }
+        else{
             if(type == 'true_false'){
                 var $form = $('#true_false_form');
             } else if(type == 'multiple_choice'){
@@ -83,6 +199,10 @@ $(function() {
         });
 
         console.log(section);
+
+        if(section === 'parametric'){
+            $("#search_parameters").click();
+        }
 
         $("."+section).show();
     });
@@ -210,6 +330,68 @@ $(function() {
         }
     })
 });
+
+function submitParametricQuestion(){
+    var form = [];
+    form.push({name: 'description', value: tinymce.activeEditor.getContent()});
+    form.push({name: 'tags', value: $("#question_tags").val()});
+
+    var php_formula = $("#php_formula").val();
+
+    var question_params = {};
+    question_params.parameters = [];
+    question_params.description = tinymce.activeEditor.getContent();
+    question_params.tags = $("#question_tags").val();
+    var values_filled = true;
+
+    $(".parameter_values" ).each(function(){
+        var answer_id = $(this).attr('id');
+
+        var element = {};
+        if($(this).prop("disabled") === true){
+            element.param = answer_id;
+            element.value = 'student_id';
+        } else{
+            var answer_values = $(this).val();
+            var answer_values_cleaned = answer_values.split(',').map(function(item) {
+                return item.trim();
+            });
+
+            if(answer_values === ""){
+                values_filled = false;
+            }
+
+            element.param = answer_id;
+            element.value = answer_values_cleaned;
+            console.log(element);
+        }
+        question_params.parameters.push(element);
+    });
+
+    question_params.php_formula = php_formula;
+    console.log(question_params);
+
+    if(values_filled){
+        var request = $.ajax({
+            method: "POST",
+            url: BASE_URL + "questions/create_parametric_question",
+            data: question_params
+        });
+
+        request.done(function (id, textStatus, jqXHR) {
+            window.location.replace(BASE_URL + "questions");
+        });
+
+        // callback handler that will be called on failure
+        request.fail(function (jqXHR, textStatus, errorThrown) {
+            // log the error to the console
+            alert(
+                "The following error occured: " + textStatus, errorThrown);
+        });
+    } else{
+        alert("One or more parameters missing values");
+    }
+}
 
 function submitOpenQuestion(){
     var form = [];
