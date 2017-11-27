@@ -211,13 +211,20 @@ class Tests_Model extends CI_Model {
         $student_id = $params['student_id'];
 
         $random_questions = $this->randomQuestionList($test_id);
+
+        $max_points = 0;
+        foreach($random_questions as $question){
+            $max_points += $question['correct_answer_points'];
+        }
+
         $random_exam = serialize($random_questions);
 
         $test = array(
             'scheduled_test_id' => $scheduled_test_id,
             'student_id' => $student_id,
             'random_test' => $random_exam,
-            'time_started' => time()
+            'time_started' => time(),
+            'max_points' => $max_points
         );
 
         $this->db->insert('generated_test', $test);
@@ -454,6 +461,7 @@ class Tests_Model extends CI_Model {
             $graded_test['total_points'] += $graded_question['total_points'];
         }
 
+        ChromePhp::log("GRADED EXAM: ");
         ChromePhp::log($graded_test);
 
         $test_results = array(
@@ -562,7 +570,7 @@ class Tests_Model extends CI_Model {
     public function getUngradedTests($teacher_id){
         ChromePhp::log("ungraded");
         $sql = "SELECT ts.*, CONCAT(s.firstName, ' ', s.lastName) AS student_name, t.name as 'test_name', t.topic FROM test_results ts
-                JOIN generated_test gt ON gt.scheduled_test_id = ts.generated_test_id
+                JOIN generated_test gt ON gt.id = ts.generated_test_id
                 LEFT JOIN test_schedule tsch ON tsch.id = gt.scheduled_test_id
                 LEFT JOIN test t ON t.id = tsch.test_id
                 JOIN student s ON s.id = gt.student_id 
@@ -581,7 +589,145 @@ class Tests_Model extends CI_Model {
     public function getUngradedTest($test_id){
         ChromePhp::log("ungraded");
         $sql = "SELECT ts.*, CONCAT(s.firstName, ' ', s.lastName) AS student_name, t.name as 'test_name', t.topic FROM test_results ts
-                JOIN generated_test gt ON gt.scheduled_test_id = ts.generated_test_id
+                JOIN generated_test gt ON gt.id = ts.generated_test_id
+                LEFT JOIN test_schedule tsch ON tsch.id = gt.scheduled_test_id
+                LEFT JOIN test t ON t.id = tsch.test_id
+                JOIN student s ON s.id = gt.student_id 
+                WHERE ts.generated_test_id = " . $test_id;
+        $query = $this->db->query($sql);
+        $results = $query->result_array()[0];
+
+        $results['result'] = unserialize($results['result']);
+
+        ChromePhp::log($results);
+
+        return $results;
+    }
+
+    public function gradeExamQuestion($question_data){
+        $sql = "SELECT ts.*
+                FROM test_results ts
+                WHERE ts.generated_test_id = " . $question_data['graded_test_id'];
+        $query = $this->db->query($sql);
+        $result = $query->result_array()[0];
+        $result['result'] = unserialize($result['result']);
+
+        ChromePhp::log($result);
+
+        foreach($result['result'] as $key => $question){
+            if($key === 'manual_evaluation' || $key === 'total_points'){
+                continue;
+            }
+            if($question['question_id'] == $question_data['question_id']){
+                $points_val = intval($question_data['total_points']);
+                if(isset($question['total_points'])){
+                    $current_points = $question['total_points'];
+                    $result['result'][$key]['total_points'] = $points_val;
+                    $result['result']['total_points'] -= $current_points;
+                    $result['result']['total_points'] += $points_val;
+
+                } else{
+                    $result['result'][$key]['total_points'] = $points_val;
+                    $result['result']['total_points'] += $points_val;
+                }
+            }
+        }
+
+        $fully_evaluated = true;
+        foreach($result['result'] as $key => $question){
+            if($key === 'manual_evaluation' || $key === 'total_points'){
+                continue;
+            }
+
+            if(!isset($question['total_points'])){
+                $fully_evaluated = false;
+                unset($result['result']['fully_evaluated']);
+            }
+        }
+
+        if($fully_evaluated){
+            $result['result']['fully_evaluated'] = true;
+        }
+
+        ChromePhp::log($result);
+
+
+        $this->db->where('generated_test_id', $question_data['graded_test_id']);
+        $this->db->delete('test_results');
+
+        $test_results = array(
+            'generated_test_id' => $question_data['graded_test_id'],
+            'result' => serialize(($result['result'])),
+            'fully_evaluated'=> false
+        );
+
+        ChromePhp::log($test_results);
+        $this->db->insert('test_results', $test_results);
+    }
+
+    public function finishGradingExam($test_id){
+        $sql = "UPDATE test_results ts SET ts.fully_evaluated = TRUE WHERE ts.generated_test_id = " . $test_id;
+        $this->db->query($sql);
+        $this->session->set_flashdata('exam_graded', $test_id);
+    }
+
+    public function getGradedTests($student_id){
+        $sql = "SELECT ts.*, gt.max_points, tsch.start_time, tsch.end_time, tsch.result_presentation_type, tsch.result_date, CONCAT(s.firstName, ' ', s.lastName) AS student_name, t.name as 'test_name', t.topic 
+                FROM test_results ts
+                JOIN generated_test gt ON gt.id = ts.generated_test_id
+                LEFT JOIN test_schedule tsch ON tsch.id = gt.scheduled_test_id
+                LEFT JOIN test t ON t.id = tsch.test_id
+                JOIN student s ON s.id = gt.student_id 
+                WHERE (ts.fully_evaluated = TRUE AND gt.student_id = ".$student_id.")
+                ORDER BY tsch.start_time DESC";
+        $query = $this->db->query($sql);
+        $results = $query->result_array();
+
+        ChromePhp::log("True result");
+        ChromePhp::log($results);
+
+
+        foreach($results as $key=>$result){
+            $results[$key]['result'] = unserialize($result['result']);
+            ChromePhp::log($results[$key]);
+            $now = date("Y-m-d H:i:s");
+            switch($results[$key]['result_presentation_type']){
+                case 'manual':
+                    $results[$key]['results_time'] = "Awaiting teacher's confirmation";
+                    $results[$key]['results_ready'] = false;
+                    break;
+                case 'end_of_exam':
+                    $end_time = date("Y-m-d H:i:s", strtotime($results[$key]['end_time']));
+                    if($now > $end_time){
+                        $results[$key]['results_time'] = "Result ready";
+                        $results[$key]['results_ready'] = true;
+                    } else{
+                        $results[$key]['results_time'] = $results[$key]['end_time'];
+                        $results[$key]['results_ready'] = false;
+                    }
+                    break;
+                case 'specify_time':
+                    $result_date = date("Y-m-d H:i:s", strtotime($results[$key]['result_date']));
+                    if($now > $result_date){
+                        $results[$key]['results_time'] = "Result ready";
+                        $results[$key]['results_ready'] = true;
+                    } else{
+                        $results[$key]['results_time'] = $result_date;
+                        $results[$key]['results_ready'] = false;
+
+                    }
+
+            }
+        }
+        ChromePhp::log($results);
+
+        return $results;
+    }
+
+
+    public function viewGradedTest($test_id){
+        $sql = "SELECT ts.*, CONCAT(s.firstName, ' ', s.lastName) AS student_name, t.name as 'test_name', t.topic FROM test_results ts
+                JOIN generated_test gt ON gt.id = ts.generated_test_id
                 LEFT JOIN test_schedule tsch ON tsch.id = gt.scheduled_test_id
                 LEFT JOIN test t ON t.id = tsch.test_id
                 JOIN student s ON s.id = gt.student_id 

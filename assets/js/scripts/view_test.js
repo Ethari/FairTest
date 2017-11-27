@@ -79,7 +79,7 @@ function gradeQuestionAjax(data, pageNum){
     });
 
     ajax.done(function (response, textStatus, jqXHR) {
-       window.location.href = BASE_URL + "admin/gradeTest/"+test_id+"?pageNum="+pageNum;
+        window.location.href = BASE_URL + "admin/gradeTest/"+test_id+"?pageNum="+pageNum;
     });
 
     // callback handler that will be called on failure
@@ -136,22 +136,18 @@ function getQuestionsForTest(){
     var test_id = $(".test_id").attr('id');
     var request = $.ajax({
         method: "POST",
-        url: BASE_URL + "admin/getUngradedTest",
+        url: BASE_URL + "results/viewGradedTest",
         data: {
             id: test_id
         }
     });
 
     request.done(function (response, textStatus, jqXHR) {
-        console.log(response);
         var test= JSON.parse(response);
 
+        console.log(test);
         var questions = test.result;
         $.each(questions, function(key, value) {
-            if(value.automatic_eval != 0){
-                return;
-            }
-
             console.log("QUESTION: " );
             console.log(value);
             var type = value.type;
@@ -245,7 +241,7 @@ function generateQuestionHeading(question, type){
         '<div class="panel-body">'+question.description+'</div>' +
         '</div>'+
         '<div class="row">'+
-        '<label class = "left exam_question_description">Student\'s answer:</label>'+
+        '<label class = "left exam_question_description">Your answers:</label> '+
         '</div>';
     ;
     return question_html;
@@ -303,8 +299,7 @@ function questionClose(question){
     var html =
         '</div>'+
         '<div class="panel-footer clearfix">' +
-        '<label class = "left" style = "margin-right: 10px; margin-top: 5px;">Points: </label>'+
-        '<input class = "left form-control question_points" style = "width: 200px;" placeholder = "Number of points" '+(question.total_points != null ? "value = '" + question.total_points + "'" : "")+'>' +
+        '<label class = "left" style = "margin-right: 10px; margin-top: 5px;">Points received: '+question.total_points+' </label>'+
         '<button class = "btn btn-primary right save_points" id = "'+question.question_id+'">Save</button>' +
         '</div>' +
         '</div>';

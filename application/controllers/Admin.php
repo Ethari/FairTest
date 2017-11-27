@@ -50,4 +50,15 @@ class Admin extends CI_Controller {
         ChromePhp::log($test);
         echo json_encode($test);
     }
+
+    public function addQuestionPoints(){
+        $question_data = $_POST;
+        $this->Tests_Model->gradeExamQuestion($question_data);
+        echo "OK";
+    }
+
+    public function finishGradingExam(){
+        $test_id = $_POST['test_id'];
+        $this->Tests_Model->finishGradingExam($test_id);
+    }
 }

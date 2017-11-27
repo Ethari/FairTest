@@ -93,7 +93,7 @@ $(function() {
     } );
 });
 
-function saveQuestionAjax(data){
+function saveQuestionAjax(data, pageNum){
     var ajax = $.ajax({
         method: "POST",
         url: BASE_URL + "tests/update_question_points",
@@ -101,7 +101,7 @@ function saveQuestionAjax(data){
     });
 
     ajax.done(function (response, textStatus, jqXHR) {
-        location.reload();
+        window.location.href = BASE_URL + "tests/create_test/"+test_id+"?pageNum="+pageNum;
     });
 
     // callback handler that will be called on failure
@@ -112,7 +112,8 @@ function saveQuestionAjax(data){
 
 function saveQuestionDetails(){
     $("#data-container").on('click', '.saveQuestionBtn', function(){
-
+        var pageNum = $('#pagination-container').pagination('getSelectedPageNum');
+        console.log(pageNum);
 
         var question_id = $(this).attr('id');
         var points_correct_answer = $("#data-container .correct_answer").val();
@@ -134,7 +135,7 @@ function saveQuestionDetails(){
         };
 
         console.log(data);
-        saveQuestionAjax(data);
+        saveQuestionAjax(data, pageNum);
     });
 
 }
@@ -156,9 +157,15 @@ function sortQuestions(){
 }
 
 function generateQuestionPage(test_questions){
+    var pageNum = getParameterByName('pageNum');
+    console.log(pageNum);
+    if(pageNum == null){
+        pageNum = 1;
+    }
     $('#pagination-container').pagination({
         dataSource: test_questions,
         pageSize: 1,
+        pageNumber: pageNum,
         className: '',
         callback: function(data, pagination) {
             // template method of yourself
@@ -377,4 +384,14 @@ function questionClose(question){
 
 
     return html;
+}
+
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
 }

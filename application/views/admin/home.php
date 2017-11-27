@@ -1,4 +1,12 @@
 <div class="row">
+    <?php
+    if($this->session->flashdata('exam_graded') != null){
+        echo  '<div class = "col-lg-12"><div class="alert alert-success alert-dismissable">
+              <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+              <strong>Success!</strong> Exam graded.
+            </div></div>';
+    }
+    ?>
     <div class="col-lg-12">
         <div class="panel panel-default">
             <div class="panel-heading">

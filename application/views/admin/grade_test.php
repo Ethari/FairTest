@@ -2,7 +2,16 @@
 
 <div class = "container-fluid">
     <div class = "row create_row">
-        <p id = "student_name">Student: <?php echo $test['student_name'];?></p>
+        <div class="col-lg-12 nopadding">
+            <div class="alert alert-info">
+                <strong><?php echo $test['student_name'];?></strong>
+            </div>
+        </div>
+    </div>
+    <div class = "row create_row">
+        <button <?php if(!isset($test['result']['fully_evaluated'])){
+            echo "disabled";
+        }?> class = "btn btn-danger left" id = "finish_grading">Finish grading the exam</button>
     </div>
     <div class = "row create_row">
         <label>Questions</label>

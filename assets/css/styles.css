@@ -212,3 +212,11 @@ p {
     color: red;
 }
 
+.correct_row{
+    background-color: #ccffce !important;
+}
+
+.incorrect_row{
+    background-color: #ffe8e8 !important;
+}
+
