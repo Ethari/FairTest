@@ -9,6 +9,9 @@ class Students extends CI_Controller {
         $this->load->model('Account_Model');
 
         $this->load->model('loader');
+
+        $this->load->model('Authentication');
+        $this->Authentication->hasPermission("teacher");
     }
 
     public function index(){

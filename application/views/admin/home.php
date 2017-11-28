@@ -57,9 +57,10 @@
                     <table id = "grade_test_table" class="table table-striped table-bordered table-hover text-center">
                         <thead>
                         <tr>
-                            <th class="col-xs-3">Name</th>
-                            <th class="col-xs-3">Topic</th>
+                            <th class="col-xs-2">Name</th>
+                            <th class="col-xs-2">Topic</th>
                             <th class="col-xs-3">Student</th>
+                            <th class="col-xs-2">Time finished</th>
                             <th class = "col-xs-3"></th>
                         </tr>
                         </thead>
@@ -71,6 +72,7 @@
                         <td>".$test['test_name']."</td>
                         <td>".$test['topic']."</td>
                         <td>".$test['student_name']."</td>
+                        <td>".$test['time_finished']."</td>
                         <td><a href = '".base_url("admin/gradeTest/".$test['generated_test_id'])."'><button class = 'btn btn-primary' id = '".$test['generated_test_id']."'>Grade</button></td>
                     </tr>
                 ";}

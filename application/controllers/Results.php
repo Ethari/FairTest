@@ -8,6 +8,10 @@ class Results extends CI_Controller {
         $this->load->model('Courses_Model');
         $this->load->model('Tests_Model');
         $this->load->model('loader');
+
+        $this->load->model('Authentication');
+        $this->Authentication->hasPermission("student");
+
     }
 
     public function index(){

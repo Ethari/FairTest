@@ -554,31 +554,38 @@ class Tests_Model extends CI_Model {
             }
 
             $correct_answers = 0;
+            $max_correct_answers = 0;
             $wrong_answers = 0;
             foreach($question['answers'] as $answer){
                 if($question['type'] == "multiple_choice"){
-                    if($answer['answer'] == false){
+                    if($answer['answer'] == "false"){
                         if(isset($answer['student_answer'])){
                             $wrong_answers+=1;
                         }
                     } else{
+                        $max_correct_answers++;
                         if(isset($answer['student_answer'])){
-                            if($answer['student_answer'] == $answer['answer']){
+                            if($answer['student_answer'] === $answer['answer']){
                                 $correct_answers+=1;
                             } else{
+                                $wrong_answers+=1;
+                            }
+                        } else{
+                            if($answer['answer'] == 'true'){
                                 $wrong_answers+=1;
                             }
                         }
                     }
                 } elseif($question['type'] == "true_false"){
+                    $max_correct_answers++;
                     if(!isset($answer['student_answer'])){
                         $wrong_answers++;
                     } else{
-                        if($answer['student_answer'] == $answer['answer']){
+                        if($answer['student_answer'] === $answer['answer']){
                             ChromePhp::log("CORRECT");
                             $correct_answers+= 1;
                         } else{
-                            $wrong_answers+= 1;
+                            $wrong_answers++;
                         }
                     }
                 }
@@ -586,8 +593,9 @@ class Tests_Model extends CI_Model {
 
             $question['correct_answers'] = $correct_answers;
             $question['wrong_answers'] = $wrong_answers;
+            $question['max_correct_answers'] = $max_correct_answers;
 
-            $positive_points = $correct_answers * floatval($question['correct_answer_points']);
+            $positive_points = floatval($correct_answers/$max_correct_answers) * floatval($question['correct_answer_points']);
             $negative_points = $wrong_answers * floatval($question['incorrect_answer_points']);
             $total_points = $positive_points + $negative_points;
 
@@ -624,11 +632,12 @@ class Tests_Model extends CI_Model {
 
     public function getUngradedTests($teacher_id){
         ChromePhp::log("ungraded");
-        $sql = "SELECT ts.*, CONCAT(s.firstName, ' ', s.lastName) AS student_name, t.name as 'test_name', t.topic FROM test_results ts
+        $sql = "SELECT ts.*, CONCAT(u.firstName, ' ', u.lastName) AS student_name, t.name as 'test_name', t.topic FROM test_results ts
                 JOIN generated_test gt ON gt.id = ts.generated_test_id
                 LEFT JOIN test_schedule tsch ON tsch.id = gt.scheduled_test_id
                 LEFT JOIN test t ON t.id = tsch.test_id
-                JOIN student s ON s.id = gt.student_id 
+                JOIN student s ON s.user_id = gt.student_id 
+                JOIN user u ON u.id = s.user_id
                 WHERE ts.fully_evaluated = FALSE ";
         $query = $this->db->query($sql);
         $results = $query->result_array();
@@ -643,16 +652,20 @@ class Tests_Model extends CI_Model {
 
     public function getUngradedTest($test_id){
         ChromePhp::log("ungraded");
-        $sql = "SELECT ts.*, CONCAT(s.firstName, ' ', s.lastName) AS student_name, t.name as 'test_name', t.topic FROM test_results ts
+        $sql = "SELECT ts.*, CONCAT(u.firstName, ' ', u.lastName) AS student_name, s.user_id, t.name as 'test_name', t.topic, ts.time_finished FROM test_results ts
                 JOIN generated_test gt ON gt.id = ts.generated_test_id
                 LEFT JOIN test_schedule tsch ON tsch.id = gt.scheduled_test_id
                 LEFT JOIN test t ON t.id = tsch.test_id
-                JOIN student s ON s.id = gt.student_id 
+                JOIN student s ON s.user_id = gt.student_id 
+                JOIN user u ON u.id = s.user_id
                 WHERE ts.generated_test_id = " . $test_id;
         $query = $this->db->query($sql);
         $results = $query->result_array()[0];
 
         $results['result'] = unserialize($results['result']);
+
+        $this->load->model('Authentication');
+        $this->Authentication->hasPermission("student", $results['user_id']);
 
         ChromePhp::log($results);
 
@@ -731,13 +744,14 @@ class Tests_Model extends CI_Model {
     }
 
     public function getGradedTests($student_id){
-        $sql = "SELECT ts.*, gt.max_points, tsch.start_time, tsch.end_time, tsch.result_presentation_type, tsch.result_date, CONCAT(s.firstName, ' ', s.lastName) AS student_name, t.name as 'test_name', t.topic 
+        $sql = "SELECT ts.*, ts.fully_evaluated, gt.max_points, tsch.start_time, tsch.end_time, tsch.result_presentation_type, tsch.result_date, CONCAT(u.firstName, ' ', u.lastName) AS student_name, t.name as 'test_name', t.topic 
                 FROM test_results ts
                 JOIN generated_test gt ON gt.id = ts.generated_test_id
                 LEFT JOIN test_schedule tsch ON tsch.id = gt.scheduled_test_id
                 LEFT JOIN test t ON t.id = tsch.test_id
-                JOIN student s ON s.id = gt.student_id 
-                WHERE (ts.fully_evaluated = TRUE AND gt.student_id = ".$student_id.")
+                JOIN student s ON s.user_id = gt.student_id 
+                JOIN user u ON u.id = s.user_id
+                WHERE (gt.student_id = ".$student_id.")
                 ORDER BY tsch.start_time DESC";
         $query = $this->db->query($sql);
         $results = $query->result_array();
@@ -777,6 +791,10 @@ class Tests_Model extends CI_Model {
                     }
 
             }
+            if($results[$key]['fully_evaluated'] == false){
+                $results[$key]['results_time'] = "Waiting for teacher to grade.";
+                $results[$key]['results_ready'] = false;
+            }
         }
         ChromePhp::log($results);
 
@@ -785,11 +803,12 @@ class Tests_Model extends CI_Model {
 
 
     public function viewGradedTest($test_id){
-        $sql = "SELECT ts.*, CONCAT(s.firstName, ' ', s.lastName) AS student_name, t.name as 'test_name', t.topic FROM test_results ts
+        $sql = "SELECT ts.*, CONCAT(u.firstName, ' ', u.lastName) AS student_name, t.name as 'test_name', t.topic FROM test_results ts
                 JOIN generated_test gt ON gt.id = ts.generated_test_id
                 LEFT JOIN test_schedule tsch ON tsch.id = gt.scheduled_test_id
                 LEFT JOIN test t ON t.id = tsch.test_id
-                JOIN student s ON s.id = gt.student_id 
+                JOIN student s ON s.user_id = gt.student_id 
+                JOIN user u ON u.id = s.user_id
                 WHERE ts.generated_test_id = " . $test_id;
         $query = $this->db->query($sql);
         $results = $query->result_array()[0];

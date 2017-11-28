@@ -35,7 +35,6 @@ $(function() {
         });
 
         request.done(function (response, textStatus, jqXHR) {
-            FB.logout();
             location.reload();
         });
 

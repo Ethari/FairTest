@@ -7,6 +7,9 @@ class Courses extends CI_Controller {
         parent::__construct();
         $this->load->model('Courses_Model');
         $this->load->model('loader');
+
+        $this->load->model('Authentication');
+        $this->Authentication->hasPermission("teacher");
     }
 
     public function index(){

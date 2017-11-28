@@ -50,14 +50,14 @@ class Groups_Model extends CI_Model {
     }
 
     public function getStudents($group_id){
-        $sql = "SELECT s.* FROM student s JOIN groups_students gs ON gs.student_id = s.id WHERE gs.group_id = " . $group_id;
+        $sql = "SELECT s.*, u.* FROM student s JOIN user u ON u.id = s.user_id JOIN groups_students gs ON gs.student_id = s.user_id WHERE gs.group_id = " . $group_id;
         $query = $this->db->query($sql);
 
         return $query->result_array();
     }
 
     public function getStudentsNotInGroup($group_id){
-        $sql = "SELECT s.* FROM student s WHERE s.id NOT IN (SELECT student_id FROM groups_students WHERE group_id = " . $group_id ."); ";
+        $sql = "SELECT s.*, u.* FROM student  s JOIN user u ON u.id = s.user_id  WHERE s.user_id NOT IN (SELECT student_id FROM groups_students WHERE group_id = " . $group_id ."); ";
         $query = $this->db->query($sql);
 
         return $query->result_array();
@@ -89,6 +89,7 @@ class Groups_Model extends CI_Model {
                 $student['studentIndex'] = substr($student_info[1], 4);
                 $student['lastName'] = $student_info[2];
                 $student['firstName'] = mb_convert_encoding($student_info[3], "UTF-8");
+                $student['type'] = 'student';
                 $student_info[3];
                 $students[] = $student;
                 ChromePhp::log($student);
@@ -111,13 +112,13 @@ class Groups_Model extends CI_Model {
             $query = $this->db->get('student');
             $student_record = $query->result_array()[0];
 
-            $this->db->where('student_id', $student_record['id']);
+            $this->db->where('student_id', $student_record['user_id']);
             $this->db->where('group_id', $group_id);
             $query2 = $this->db->get('groups_students');
             if ($query2->num_rows() == 0)
             {
                 $insert_data = array(
-                    'student_id' => $student_record['id'],
+                    'student_id' => $student_record['user_id'],
                     'group_id' => $group_id
                 );
                 $this->db->insert('groups_students', $insert_data);

@@ -13,8 +13,21 @@ class Account_Model extends CI_Model {
 
     public function register($student){
         $student['password'] = crypt($student['lastName'], 'd41d8cd98f00b204e9800998ecf8427e');
-        if($this->db->insert('student', $student)){
+        $user = array(
+            'firstName' => $student['firstName'],
+            'lastName' => $student['lastName'],
+            'username' => $student['studentIndex'],
+            'password' => $student['password'],
+            'type' => 'student'
+        );
+
+        if($this->db->insert('user', $user)){
             $id = $this->db->insert_id();
+            $student = array(
+                'user_id' => $id,
+                'studentIndex' => $student['studentIndex']
+            );
+            $this->db->insert('student', $student);
         } else{
             $id = -1;
         }
@@ -22,7 +35,7 @@ class Account_Model extends CI_Model {
     }
 
     public function getStudentID($user_id){
-        $sql = "SELECT s.studentIndex FROM student s WHERE s.id = " . $user_id;
+        $sql = "SELECT s.studentIndex FROM student s WHERE s.user_id = " . $user_id;
         $query = $this->db->query($sql);
         $student_array = $query->result_array()[0];
         return $student_array['studentIndex'];
@@ -30,8 +43,8 @@ class Account_Model extends CI_Model {
 
     public function login($user){
 
-        $this->db->where('studentIndex',$user['username']);
-        $query = $this->db->get('student');
+        $this->db->where('username', $user['username']);
+        $query = $this->db->get('user');
 
         if ($query->num_rows() > 0){
             $results = $query->result_array();
@@ -42,6 +55,8 @@ class Account_Model extends CI_Model {
                     'username' => $user['username'],
                     'id' => $results[0]['id'],
                     'name' => $results[0]['firstName'],
+                    'lastName' => $results[0]['lastName'],
+                    'type' => $results[0]['type'],
                     'logged_in' => time()
                 );
                 $this->session->set_userdata($user);
@@ -57,7 +72,7 @@ class Account_Model extends CI_Model {
     }
 
     public function logout(){
-        $user = array('username', 'logged_in', 'name', 'id');
+        $user = array('username', 'logged_in', 'name', 'id', 'type', 'lastName');
         $this->session->unset_userdata($user);
     }
 }

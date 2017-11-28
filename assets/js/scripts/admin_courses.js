@@ -25,7 +25,6 @@ $(function() {
             })
 
             .done(function(id) {
-                alert("ok");
                 $(el).parent().parent().remove();
 
             })

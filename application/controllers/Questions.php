@@ -8,6 +8,9 @@ class Questions extends CI_Controller {
         $this->load->model('Questions_Model');
         $this->load->model('Courses_Model');
         $this->load->model('loader');
+
+        $this->load->model('Authentication');
+        $this->Authentication->hasPermission("teacher");
     }
 
     public function index(){

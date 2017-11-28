@@ -19,14 +19,17 @@
                 <li class="hidden">
                     <a href="#page-top"></a>
                 </li>
-                <li>
-                    <a href = "<?php echo base_url() ?>admin">ADMINISTRATION</a>
-                </li>
                 <?php
                     if($this->session->has_userdata('username')){
-                        echo '<li class="">
-                                <a href = "'.base_url().'exams" id="exams">EXAMS</a>
-                              </li>';
+                        if($this->session->userdata('type') == 'teacher'){
+                            echo '<li class="">
+                                    <a href = "'.base_url().'admin">ADMINISTRATION</a>
+                                  </li>';
+                        } else if($this->session->userdata('type') == 'student'){
+                            echo '<li class="">
+                                    <a href = "' . base_url() . 'exams" id="exams">EXAMS</a>
+                                  </li>';
+                        }
                         echo '<li class="">
                                 <a href = "'.base_url().'" id="logout">LOGOUT</a>
                               </li>';

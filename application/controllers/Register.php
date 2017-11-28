@@ -4,6 +4,8 @@ class Register extends CI_Controller
     public function __construct()
     {
         parent::__construct();
+        $this->load->model('Authentication');
+        $this->Authentication->hasPermission("teacher");
     }
 
     public function index()

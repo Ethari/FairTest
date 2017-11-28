@@ -10,6 +10,9 @@ class Tests extends CI_Controller {
         $this->load->model('Tests_Model');
         $this->load->model('Groups_Model');
         $this->load->model('loader');
+
+        $this->load->model('Authentication');
+        $this->Authentication->hasPermission("teacher");
     }
 
     public function index(){

@@ -3,7 +3,8 @@
 class Students_Model extends CI_Model {
 
     public function getAllStudents(){
-        $sql = "SELECT * FROM student;";
+        $sql = "SELECT s.*, u.* FROM user u 
+                JOIN student s ON s.user_id = u.id;";
         $query = $this->db->query($sql);
 
         return $query->result_array();
@@ -27,8 +28,10 @@ class Students_Model extends CI_Model {
     }
 
     public function deleteStudent($id){
-        $this->db->where('id', $id);
+        $this->db->where('user_id', $id);
         $this->db->delete('student');
+        $this->db->where('id', $id);
+        $this->db->delete('user');
 
         $this->db->where('student_id', $id);
         $this->db->delete('groups_students');
