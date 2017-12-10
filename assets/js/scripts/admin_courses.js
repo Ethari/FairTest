@@ -26,7 +26,7 @@ $(function() {
 
             .done(function(id) {
                 $(el).parent().parent().remove();
-
+                location.reload();
             })
 
             .fail(function(id){
@@ -54,6 +54,7 @@ $(function() {
                         $('#newCourseModal').modal('hide');
                         $('#course_name').val('');
                         $('#course_success').show();
+                        location.reload();
                     } else{
                         console.log("fail");
                         $( "#course_error" ).show();

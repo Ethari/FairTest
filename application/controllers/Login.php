@@ -10,6 +10,7 @@ class Login extends CI_Controller
     {
         $user = $_POST;
         if($this->Account_Model->login($user)){
+            ChromePhp::log("?????");
             echo "true";
         } else{
             echo "false";

@@ -115,7 +115,7 @@ $(function() {
 
                 .done(function(id) {
                     $(el).parent().parent().remove();
-
+                    location.reload();
                 })
 
                 .fail(function(id){
@@ -156,6 +156,7 @@ $(function() {
                     $('#newGroupModal').modal('hide');
                     $('#group_name').val('');
                     $('#group_success').show();
+                    location.reload();
                 } else{
                     $( "#group_error" ).show();
                 }

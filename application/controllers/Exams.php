@@ -85,4 +85,9 @@ class Exams extends CI_Controller {
 
 
     }
+
+    public function changePassword(){
+        $page = 'change_password';
+        $this->loader->generatePage($page);
+    }
 }

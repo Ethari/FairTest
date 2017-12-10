@@ -33,18 +33,20 @@
             </div>
             <div class="panel-body">
                 <div id="courses_list">
-                    <div id = "course_success" class="alert alert-success alert-dismissible" role="alert" style = "display:none;">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <strong>Success!</strong> Course added.
-                    </div>
+                    <?php
+                    if($this->session->flashdata('course_added') != null){
+                        echo  '<div class = "col-lg-12"><div class="alert alert-success alert-dismissable">
+                                  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                  <strong>Success!</strong> Course created.
+                                </div></div>';
+                                        }
+                    ?>
                     <table id = "course_table" class="table table-striped table-bordered table-hover text-center">
                         <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Number of questions</th>
-                            <th>Number of exams</th>
+                            <th>Number of groups</th>
+                            <th>Number of students</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -54,8 +56,8 @@
                             echo "
                     <tr>
                         <td>".$course['name']."</td>
-                        <td>0</td>
-                        <td>0</td>
+                        <td>".$course['number_of_groups']."</td>
+                        <td>".$course['number_of_students']."</td>
                         <td><button id = ".$course['course_id']." class='btn btn-danger deleteCourse'>Delete</button></td>
                     </tr>
                 ";}

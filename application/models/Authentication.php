@@ -34,6 +34,10 @@ class Authentication extends CI_Model {
                             $access = true;
                         }
                     }
+
+                    if(isset($session['change_password'])){
+                        header("Location: " . base_url('account/changePassword'));
+                    }
                 }
                 break;
             case 'teacher':

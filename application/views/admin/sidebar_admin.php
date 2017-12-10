@@ -19,6 +19,9 @@
         <li <?php echo $page == 'courses' ? 'class = "active"' : '';?>>
             <a href="<?php echo base_url()?>courses"><i class="fa fa-fw fa-list"></i> Courses</a>
         </li>
+        <li <?php echo $page == 'account' ? 'class = "active"' : '';?>>
+            <a href="<?php echo base_url()?>account"><i class="fa fa-fw fa-user"></i> Account </a>
+        </li>
     </ul>
 </div>
 <!-- /.navbar-collapse -->

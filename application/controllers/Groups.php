@@ -27,6 +27,7 @@ class Groups extends CI_Controller {
 
     public function newGroup(){
         $new_group = $this->Groups_Model->newGroup($_POST);
+        $this->session->set_flashdata('group_added', true);
         echo $new_group;
     }
 

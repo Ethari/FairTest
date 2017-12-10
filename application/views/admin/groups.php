@@ -58,12 +58,14 @@
             </div>
             <div class="panel-body">
                 <div id="groups_list">
-                    <div id = "group_success" class="alert alert-success alert-dismissible" role="alert" style = "display:none;">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <strong>Success!</strong> Course added.
-                    </div>
+                    <?php
+                    if($this->session->flashdata('group_added') != null){
+                        echo  '<div class = "col-lg-12"><div class="alert alert-success alert-dismissable">
+                                  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                  <strong>Success!</strong> Group created.
+                                </div></div>';
+                    }
+                    ?>
                     <table id = "group_table" class="table table-striped table-bordered table-hover text-center">
                         <thead>
                         <tr>

@@ -6,8 +6,20 @@ class Welcome extends CI_Controller {
 	public function index()
 	{
         $this->load->model('loader');
-        $page = 'index';
-        $this->loader->generatePage($page, null);
+        $session = $this->session->userdata();
+        ChromePhp::log($session);
+        if(isset($session['change_password'])){
+            ChromePhp::log("SET");
+           $this->changePassword();
+        } else{
+            $page = 'index';
+            $this->loader->generatePage($page, null);
+        }
 
 	}
+
+    public function changePassword(){
+        $page = 'change_password';
+        $this->loader->generatePage($page);
+    }
 }

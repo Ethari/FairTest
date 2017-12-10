@@ -13,7 +13,8 @@ $(function() {
             });
 
             request.done(function (response, textStatus, jqXHR) {
-                if (response == "true") {
+                console.log(response);
+                if (response === "true") {
                     location.reload();
                 } else {
                     $('#login_fail').show();
